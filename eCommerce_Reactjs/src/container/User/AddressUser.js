@@ -2,22 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { getAllAddressUserByUserIdService, createNewAddressUserrService, deleteAddressUserService, editAddressUserService } from '../../services/userService';
 import AddressUsersModal from '../ShopCart/AdressUserModal';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    useParams
-} from "react-router-dom";
 import './AddressUser.scss';
 function AddressUser(props) {
-
+    const { id } = props;
     const [dataAddressUser, setdataAddressUser] = useState([])
     const [addressUserId, setaddressUserId] = useState('')
     const [isOpenModalAddressUser, setisOpenModalAddressUser] = useState(false)
     useEffect(() => {
-        let userId = props.id
+        let userId = id
         if (userId) {
             let fetchDataAddress = async () => {
                 let res = await getAllAddressUserByUserIdService(userId)
@@ -29,7 +21,7 @@ function AddressUser(props) {
             fetchDataAddress()
         }
 
-    }, [])
+    }, [id])
     let sendDataFromModalAddress = async (data) => {
         setisOpenModalAddressUser(false)
         setaddressUserId('')
@@ -39,12 +31,12 @@ function AddressUser(props) {
                 shipAdress: data.shipAdress,
                 shipEmail: data.shipEmail,
                 shipPhonenumber: data.shipPhonenumber,
-                userId: props.id,
+                userId: id,
 
             })
             if (res && res.errCode === 0) {
                 toast.success("Thêm địa chỉ thành công !")
-                let res = await getAllAddressUserByUserIdService(props.id)
+                let res = await getAllAddressUserByUserIdService(id)
                 if (res && res.errCode === 0) {
                     setdataAddressUser(res.data)
                 }
@@ -58,11 +50,11 @@ function AddressUser(props) {
                 shipAdress: data.shipAdress,
                 shipEmail: data.shipEmail,
                 shipPhonenumber: data.shipPhonenumber,
-                userId: props.id,
+                userId: id,
             })
             if (res && res.errCode === 0) {
                 toast.success("Cập nhật địa chỉ thành công !")
-                let res = await getAllAddressUserByUserIdService(props.id)
+                let res = await getAllAddressUserByUserIdService(id)
                 if (res && res.errCode === 0) {
                     setdataAddressUser(res.data)
                 }
@@ -89,7 +81,7 @@ function AddressUser(props) {
         })
         if (res && res.errCode === 0) {
             toast.success("Xóa địa chỉ user thành công")
-            let res = await getAllAddressUserByUserIdService(props.id)
+            let res = await getAllAddressUserByUserIdService(id)
             if (res && res.errCode === 0) {
                 setdataAddressUser(res.data)
 

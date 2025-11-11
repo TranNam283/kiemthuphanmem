@@ -1,5 +1,4 @@
-import React from "react";
-import { useEffect, useState } from 'react';
+import React, { useState } from "react";
 import './ChangePassword.scss';
 import { handleChangePassword } from '../../../services/userService';
 import { toast } from "react-toastify";
@@ -29,7 +28,7 @@ const ChangePassword = () => {
             })
             if (res && res.errCode === 0) {
                 toast.success("Đổi mật khẩu thành công")
-                setInputValues({ ...inputValues, ["newpassword"]: '', ["confirmpassword"]: '', ["oldpassword"]: '' })
+                setInputValues({ newpassword: '', confirmpassword: '', oldpassword: '' })
             } else {
                 toast.error(res.errMessage)
             }

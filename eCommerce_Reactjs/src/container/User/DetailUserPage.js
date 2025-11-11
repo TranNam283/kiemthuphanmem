@@ -1,6 +1,5 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import DatePicker from '../../component/input/DatePicker';
@@ -12,7 +11,7 @@ import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
 import './DetailUserPage.scss';
 
-function DetailUserPage(props) {
+function DetailUserPage() {
     const { id } = useParams();
     const { data: dataGender } = useFetchAllcode('GENDER')
     const [birthday, setbirthday] = useState('');
@@ -20,44 +19,43 @@ function DetailUserPage(props) {
     const [inputValues, setInputValues] = useState({
         firstName: '', lastName: '', address: '', phonenumber: '', genderId: '', dob: '', roleId: '', email: '', image: '', isActiveEmail: '', imageReview: '', isOpen: false
     });
-    ;
-    console.log(dataGender)
-    if (dataGender && dataGender.length > 0 && inputValues.genderId === null) {
-
-        setInputValues({ ...inputValues, ["genderId"]: dataGender[0].code })
-    }
+    useEffect(() => {
+        if (dataGender && dataGender.length > 0) {
+            setInputValues((prev) => {
+                if (prev.genderId) {
+                    return prev;
+                }
+                return { ...prev, genderId: dataGender[0].code };
+            });
+        }
+    }, [dataGender]);
     useEffect(() => {
 
-        let fetchUser = async () => {
+        const fetchUser = async () => {
             let res = await getDetailUserById(id)
             if (res && res.errCode === 0) {
-                setStateUser(res.data)
+                const data = res.data;
+                setInputValues((prev) => ({
+                    ...prev,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    address: data.address,
+                    phonenumber: data.phonenumber,
+                    genderId: data.genderId,
+                    roleId: data.roleId,
+                    email: data.email,
+                    id: data.id,
+                    dob: data.dob,
+                    image: data.image ? data.image : "https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg",
+                    isActiveEmail: data.isActiveEmail
+                }));
 
+                setbirthday(moment.unix(+data.dob / 1000).locale('vi').format('DD/MM/YYYY'))
             }
         }
         fetchUser();
 
     }, [id])
-
-    let setStateUser = (data) => {
-
-        setInputValues({
-            ...inputValues,
-            ["firstName"]: data.firstName,
-            ["lastName"]: data.lastName,
-            ["address"]: data.address,
-            ["phonenumber"]: data.phonenumber,
-            ["genderId"]: data.genderId,
-            ["roleId"]: data.roleId,
-            ["email"]: data.email,
-            ["id"]: data.id,
-            ["dob"]: data.dob,
-            ["image"]: data.image ? data.image : "https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg",
-            ["isActiveEmail"]: data.isActiveEmail
-        })
-
-        setbirthday(moment.unix(+data.dob / 1000).locale('vi').format('DD/MM/YYYY'))
-    }
     const handleOnChange = event => {
         const { name, value } = event.target;
         setInputValues({ ...inputValues, [name]: value });
@@ -106,18 +104,18 @@ function DetailUserPage(props) {
         else {
             let base64 = await CommonUtils.getBase64(file);
             let objectUrl = URL.createObjectURL(file)
-            setInputValues({ ...inputValues, ["image"]: base64, ["imageReview"]: objectUrl })
+            setInputValues((prev) => ({ ...prev, image: base64, imageReview: objectUrl }))
 
         }
     }
     let openPreviewImage = (url) => {
 
 
-        setInputValues({
-            ...inputValues,
-            ["isOpen"]: true,
-            ["imageReview"]: url
-        })
+        setInputValues((prev) => ({
+            ...prev,
+            isOpen: true,
+            imageReview: url
+        }))
 
     }
     return (
@@ -125,7 +123,7 @@ function DetailUserPage(props) {
             <div className="row">
                 <div className="col-md-3 border-right">
                     <div className="d-flex flex-column align-items-center text-center p-3 py-5">
-                        <img onClick={() => openPreviewImage(inputValues.image)} className="rounded-circle mt-5" height="170px" style={{ objectFit: "cover", cursor: 'pointer' }} width="150px" src={inputValues.image} />
+                        <img onClick={() => openPreviewImage(inputValues.image)} className="rounded-circle mt-5" height="170px" style={{ objectFit: "cover", cursor: 'pointer' }} width="150px" src={inputValues.image} alt="user" />
                         <span className="font-weight-bold">{inputValues.lastName}</span>
                         <div className="box-email-verify">
                             <span className="text-black-50">{inputValues.email}
@@ -193,7 +191,7 @@ function DetailUserPage(props) {
             {
                 inputValues.isOpen === true &&
                 <Lightbox mainSrc={inputValues.imageReview}
-                    onCloseRequest={() => setInputValues({ ...inputValues, ["isOpen"]: false })}
+                    onCloseRequest={() => setInputValues((prev) => ({ ...prev, isOpen: false }))}
                 />
             }
         </div >

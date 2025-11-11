@@ -1,18 +1,11 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { getAllUsers, DeleteUserService } from '../../../services/userService';
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 import FormSearch from '../../../component/Search/FormSearch';
 
 const ManageUser = () => {
@@ -22,21 +15,21 @@ const ManageUser = () => {
     const [numberPage, setnumberPage] = useState('')
     const [keyword, setkeyword] = useState('')
     
-    useEffect(() => {
-         fetchAllUser(keyword)
-    }, [])
-    let fetchAllUser = async (keyword) => {
+    const fetchAllUser = useCallback(async (searchKeyword) => {
         let res = await getAllUsers({
             limit: PAGINATION.pagerow,
             offset: 0,
-            keyword:keyword
+            keyword: searchKeyword
         })
         if (res && res.errCode === 0) {
 
             setdataUser(res.data);
             setCount(Math.ceil(res.count / PAGINATION.pagerow))
         }
-    }
+    }, [])
+    useEffect(() => {
+         fetchAllUser(keyword)
+    }, [fetchAllUser, keyword])
     let handleBanUser = async (event, id) => {
         event.preventDefault();
 
@@ -72,14 +65,12 @@ const ManageUser = () => {
 
         }
     }
-    let handleSearchUser = (keyword) =>{
-        fetchAllUser(keyword)
-        setkeyword(keyword)
+    let handleSearchUser = (value) =>{
+        setkeyword(value)
     }
-    let handleOnchangeSearch = (keyword) =>{
-        if(keyword === ''){
-            fetchAllUser(keyword)
-            setkeyword(keyword)
+    let handleOnchangeSearch = (value) =>{
+        if(value === ''){
+            setkeyword(value)
         }
     }
     let handleOnClickExport =async () =>{
@@ -88,7 +79,7 @@ const ManageUser = () => {
             offset: '',
             keyword:''
         })
-        if(res && res.errCode == 0){
+        if(res && res.errCode === 0){
             await CommonUtils.exportExcel(res.data,"Danh sách người dùng","ListUser")
         }
        
@@ -144,7 +135,7 @@ const ManageUser = () => {
                                                 <td>
                                                     <Link to={`/admin/edit-user/${item.id}`}>Edit</Link>
                                                     &nbsp; &nbsp;
-                                                    <a href="#" onClick={(event) => handleBanUser(event, item.id)} >Delete</a>
+                                                    <button type="button" className="btn btn-link p-0" onClick={(event) => handleBanUser(event, item.id)} >Delete</button>
                                                 </td>
                                             </tr>
                                         )

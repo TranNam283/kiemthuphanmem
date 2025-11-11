@@ -1,19 +1,10 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useFetchAllcode } from '../../customize/fetch';
+import React, { useEffect, useState } from 'react';
 import { deleteTypeVoucherService, getAllTypeVoucher } from '../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from 'react-router-dom';
 const ManageTypeShip = () => {
 
     const [dataTypeVoucher, setdataTypeVoucher] = useState([])
@@ -79,7 +70,7 @@ const ManageTypeShip = () => {
             offset: '',
 
         })
-        if (res && res.errCode == 0) {
+        if (res && res.errCode === 0) {
             await CommonUtils.exportExcel(res.data, "Danh sách loại voucher", "ListTypeVoucher")
         }
 
@@ -121,7 +112,7 @@ const ManageTypeShip = () => {
                                             <tr key={index}>
                                                 <td>{index + 1}</td>
                                                 <td>{item.typeVoucherData.value}</td>
-                                                <td>{item.typeVoucher == "percent" ? item.value + "%" : CommonUtils.formatter.format(item.value)}</td>
+                                                <td>{item.typeVoucher === "percent" ? `${item.value}%` : CommonUtils.formatter.format(item.value)}</td>
                                                 <td>{CommonUtils.formatter.format(item.minValue)}</td>
                                                 <td>{CommonUtils.formatter.format(item.maxValue)}</td>
                                                 <td>

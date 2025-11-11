@@ -11,7 +11,7 @@ function VoucherItem(props) {
         <div>
             <div style={{ width: props.width, height: props.height }} className="box-voucher">
                 <div className="content-left">
-                    <img src={logoVoucher}></img>
+                    <img src={logoVoucher} alt="voucher" />
                     <span>{props.name}</span>
                 </div>
                 <div className="border-center">

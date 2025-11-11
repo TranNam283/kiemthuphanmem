@@ -1,45 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import VoucherItem from '../Voucher/VoucherItem';
-import logoVoucher from '../../../src/resources/img/logoVoucher.png'
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import React, { useEffect, useState } from 'react';
 import './StoreVoucher.scss';
 import VoucherItemSmall from './VoucherItemSmall';
 import { getAllVoucherByUserIdService } from '../../services/userService';
-import moment, { now } from 'moment';
-import { toast } from 'react-toastify';
+import moment from 'moment';
 import { PAGINATION } from '../../utils/constant';
 import CommonUtils from '../../utils/CommonUtils';
-function StoreVoucher(props) {
-    const [inputValues, setInputValues] = useState({
-        codeVoucher: '', activeBtn: false
-    });
+function StoreVoucher({ id }) {
     const [dataVoucher, setdataVoucher] = useState([])
-    const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
-    function compareDates(d1, d2) {
-        var parts = d1.split('/');
-        var d1 = Number(parts[2] + parts[1] + parts[0]);
-        parts = d2.split('/');
-        var d2 = Number(parts[2] + parts[1] + parts[0]);
-        if (d1 <= d2) return true
-        if (d1 >= d2) return false
-
+    const compareDates = (firstDate, secondDate) => {
+        const toNumeric = (dateStr) => {
+            const [day, month, year] = dateStr.split('/');
+            return Number(`${year}${month}${day}`);
+        };
+        const firstNumeric = toNumeric(firstDate);
+        const secondNumeric = toNumeric(secondDate);
+        if (firstNumeric <= secondNumeric) return true;
+        if (firstNumeric >= secondNumeric) return false;
+        return false;
     }
     useEffect(() => {
-        let id = props.id
         if (id) {
             let fetchData = async () => {
                 let arrData = await getAllVoucherByUserIdService({
 
                     limit: PAGINATION.pagerow,
                     offset: 0,
-                    id: props.id
+                    id: id
                 })
                 let arrTemp = []
                 if (arrData && arrData.errCode === 0) {
@@ -56,13 +42,12 @@ function StoreVoucher(props) {
                         }
                     }
                     setdataVoucher(arrTemp)
-                    setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
                 }
             }
             fetchData()
         }
 
-    }, [props.id])
+    }, [id])
 
    
  

@@ -1,23 +1,12 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getStatisticStockProduct } from '../../../services/userService';
-import moment from 'moment';
-import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
 const StockProduct = () => {
 
     const [dataStockProduct, setdataStockProduct] = useState([])
     const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
 
 
     useEffect(() => {
@@ -46,7 +35,6 @@ const StockProduct = () => {
     }
 
     let handleChangePage = async (number) => {
-        setnumberPage(number.selected)
         let arrData = await getStatisticStockProduct({
             limit: PAGINATION.pagerow,
             offset: number.selected * PAGINATION.pagerow,
@@ -65,7 +53,7 @@ const StockProduct = () => {
             offset: '',
 
         })
-        if (res && res.errCode == 0) {
+        if (res && res.errCode === 0) {
             await CommonUtils.exportExcel(res.data, "Danh sách sản phẩm tồn kho", "ListOrder")
         }
 

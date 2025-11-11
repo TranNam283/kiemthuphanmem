@@ -1,12 +1,9 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createNewSupplierService, getDetailSupplierByIdService, updateSupplierService } from '../../../services/userService';
 
 import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
-
-import moment from 'moment';
 const AddSupplier = (props) => {
 
 
@@ -20,23 +17,23 @@ const AddSupplier = (props) => {
         name: '', address: '',phonenumber: '',email: ''
     });
     useEffect(() => {
-
-        if (id) {
-            let fetchDetailSupplier = async () => {
-                setisActionADD(false)
-                let supplier = await getDetailSupplierByIdService(id)
-                if (supplier && supplier.errCode === 0) {
-                    setInputValues({ ...inputValues, 
-                        ["name"]: supplier.data.name, 
-                        ["address"]: supplier.data.address,
-                        ["phonenumber"]: supplier.data.phonenumber,
-                        ["email"]: supplier.data.email
-                    })
-                }
-            }
-            fetchDetailSupplier()
+        if (!id) {
+            return;
         }
-    }, [])
+        const fetchDetailSupplier = async () => {
+            setisActionADD(false);
+            let supplier = await getDetailSupplierByIdService(id);
+            if (supplier && supplier.errCode === 0) {
+                setInputValues(() => ({
+                    name: supplier.data.name || '',
+                    address: supplier.data.address || '',
+                    phonenumber: supplier.data.phonenumber || '',
+                    email: supplier.data.email || ''
+                }));
+            }
+        };
+        fetchDetailSupplier();
+    }, [id])
 
     const handleOnChange = event => {
         const { name, value } = event.target;
@@ -54,11 +51,10 @@ const AddSupplier = (props) => {
             if (res && res.errCode === 0) {
                 toast.success("Thêm nhà cung cấp thành công")
                 setInputValues({
-                    ...inputValues,
-                    ["name"]: '',
-                    ["address"]: '',
-                    ["email"]: '',
-                    ["phonenumber"]: ''
+                    name: '',
+                    address: '',
+                    email: '',
+                    phonenumber: ''
                 })
             }
             else if (res && res.errCode === 2) {

@@ -1,24 +1,15 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { deleteReceiptService, getAllReceipt } from '../../../services/userService';
+import React, { useEffect, useState } from 'react';
+import { getAllReceipt } from '../../../services/userService';
 import moment from 'moment';
-import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 const ManageReceipt = () => {
   
     const [dataReceipt, setdataReceipt] = useState([])
     const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
     useEffect(() => {
         try {
            
@@ -44,7 +35,6 @@ const ManageReceipt = () => {
     }
     
     let handleChangePage = async (number) => {
-        setnumberPage(number.selected)
         let arrData = await getAllReceipt({
 
           

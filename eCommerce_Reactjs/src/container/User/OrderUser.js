@@ -1,14 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    useParams
-} from "react-router-dom";
+import { useParams } from "react-router-dom";
 import './OrderUser.scss';
 import { getAllOrdersByUser, updateStatusOrderService } from '../../services/userService'
 import { concat } from 'lodash';
@@ -17,15 +10,11 @@ function OrderUser(props) {
     const { id } = useParams();
     const [DataOrder, setDataOrder] = useState([]);
     let price = 0;
-    const [priceShip, setpriceShip] = useState(0)
-    useEffect(() => {
-        loadDataOrder()
-    }, [])
-    let loadDataOrder = () => {
+    const loadDataOrder = useCallback(() => {
         if (id) {
-            let fetchOrder = async () => {
+            const fetchOrder = async () => {
                 let order = await getAllOrdersByUser(id)
-                if (order && order.errCode == 0) {
+                if (order && order.errCode === 0) {
                     let orderArray = []
                     for (let i = 0; i < order.data.length; i++) {
 
@@ -40,14 +29,17 @@ function OrderUser(props) {
 
 
         }
-    }
+    }, [id])
+    useEffect(() => {
+        loadDataOrder()
+    }, [loadDataOrder])
     let handleCancelOrder = async (data) => {
         let res = await updateStatusOrderService({
             id: data.id,
             statusId: 'S7',
             dataOrder: data
         })
-        if (res && res.errCode == 0) {
+        if (res && res.errCode === 0) {
             toast.success("Hủy đơn hàng thành công")
             loadDataOrder()
         }
@@ -57,7 +49,7 @@ function OrderUser(props) {
             id: orderId,
             statusId: 'S6'
         })
-        if (res && res.errCode == 0) {
+        if (res && res.errCode === 0) {
             toast.success("Đã nhận đơn hàng")
             loadDataOrder()
         }
@@ -83,9 +75,13 @@ function OrderUser(props) {
             <div className="row">
                 <div className="col-md-12">
                     <div className="box-nav-order">
-                        <a className='nav-item-order active'>
+                        <button
+                            type="button"
+                            className='nav-item-order active'
+                            style={{ background: 'none', border: 'none', padding: 0 }}
+                        >
                             <span>Tất cả</span>
-                        </a>
+                        </button>
 
                     </div>
                     {/* <div className='box-search-order'>
@@ -110,23 +106,23 @@ function OrderUser(props) {
                                                 </div>
                                             </div>
                                             <div className='content-right'>
-                                                {item.statusOrderData && item.statusOrderData.value} {item.isPaymentOnlien == 1 && ' | Đã thanh toán'}
+                                                {item.statusOrderData && item.statusOrderData.value} {item.isPaymentOnlien === 1 && ' | Đã thanh toán'}
                                             </div>
                                         </div>
                                         {item.orderDetail && item.orderDetail.length > 0 &&
-                                            item.orderDetail.map((item, index) => {
+                                            item.orderDetail.map((detail, detailIndex) => {
 
-                                                price += item.quantity * item.productDetail.discountPrice
+                                                price += detail.quantity * detail.productDetail.discountPrice
                                                 return (
-                                                    <div className='content-center'>
+                                                    <div className='content-center' key={`${detail.productDetail.id}-${detailIndex}`}>
                                                         <div className='box-item-order'>
-                                                            <img src={item.productImage[0].image}></img>
+                                                            <img src={detail.productImage[0].image} alt={detail.product.name} />
                                                             <div className='box-des'>
-                                                                <span className='name'>{item.product.name}</span>
-                                                                <span className='type'>Phân loại hàng: {item.productDetail.nameDetail} | {item.productDetailSize.sizeData.value}</span>
-                                                                <span>x{item.quantity}</span>
+                                                                <span className='name'>{detail.product.name}</span>
+                                                                <span className='type'>Phân loại hàng: {detail.productDetail.nameDetail} | {detail.productDetailSize.sizeData.value}</span>
+                                                                <span>x{detail.quantity}</span>
                                                             </div>
-                                                            <div className='box-price'>{CommonUtils.formatter.format(item.productDetail.discountPrice)}</div>
+                                                            <div className='box-price'>{CommonUtils.formatter.format(detail.productDetail.discountPrice)}</div>
                                                         </div>
 
 
@@ -147,7 +143,7 @@ function OrderUser(props) {
                                             </div>
                                         </div>
                                         <div className='down'>
-                                            {((item.statusId == 'S3') || (item.statusId == 'S4')) && item.isPaymentOnlien == 0 &&
+                                            {((item.statusId === 'S3') || (item.statusId === 'S4')) && item.isPaymentOnlien === 0 &&
 
                                                 <div className='btn-buy' onClick={() => handleCancelOrder(item)}>
                                                     Hủy đơn
@@ -155,7 +151,7 @@ function OrderUser(props) {
 
                                             }
                                             {
-                                                item.statusId == 'S5' &&
+                                                item.statusId === 'S5' &&
 
 
                                                 <div className='btn-buy' onClick={() => handleReceivedOrder(item.id)} >

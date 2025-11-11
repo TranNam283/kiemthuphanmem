@@ -1,13 +1,5 @@
 import React from 'react';
-
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    useParams
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 import orderLogo from '../../../src/resources/img/orderLogo.png'
 import storeVoucherLogo from '../../../src/resources/img/storeVoucher.png'
 function CategoryUser(props) {
@@ -24,8 +16,8 @@ function CategoryUser(props) {
                         <li><Link to={`/user/changepassword/${props.id}`}>Đổi mật khẩu</Link></li>
                     </ul>
                 </li>
-                <li><img width="20px" height="20px" style={{ marginLeft: "-3px" }} src={orderLogo}></img> <Link to={`/user/order/${props.id}`}>Đơn mua</Link></li>
-                <li><img width="20px" height="20px" style={{ marginLeft: "-3px" }} src={storeVoucherLogo}></img> <Link to={`/user/store-voucher/${props.id}`}>Kho voucher</Link></li>
+                <li><img width="20px" height="20px" style={{ marginLeft: "-3px" }} src={orderLogo} alt="order" /> <Link to={`/user/order/${props.id}`}>Đơn mua</Link></li>
+                <li><img width="20px" height="20px" style={{ marginLeft: "-3px" }} src={storeVoucherLogo} alt="store voucher" /> <Link to={`/user/store-voucher/${props.id}`}>Kho voucher</Link></li>
             </ul>
         </div>
 

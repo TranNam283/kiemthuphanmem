@@ -1,12 +1,9 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createAllCodeService, getDetailAllcodeById, UpdateAllcodeService } from '../../../services/userService';
 
 import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
-
-import moment from 'moment';
 const AddSubject = (props) => {
 
 
@@ -26,12 +23,12 @@ const AddSubject = (props) => {
                 setisActionADD(false)
                 let allcode = await getDetailAllcodeById(id)
                 if (allcode && allcode.errCode === 0) {
-                    setInputValues({ ...inputValues, ["value"]: allcode.data.value, ["code"]: allcode.data.code })
+                    setInputValues((prevState) => ({ ...prevState, value: allcode.data.value, code: allcode.data.code }))
                 }
             }
             fetchDetailSubject()
         }
-    }, [])
+    }, [id])
 
     const handleOnChange = event => {
         const { name, value } = event.target;
@@ -47,11 +44,11 @@ const AddSubject = (props) => {
             })
             if (res && res.errCode === 0) {
                 toast.success("Thêm chủ đề thành công")
-                setInputValues({
-                    ...inputValues,
-                    ["value"]: '',
-                    ["code"]: ''
-                })
+                setInputValues((prevState) => ({
+                    ...prevState,
+                    value: '',
+                    code: ''
+                }))
             }
             else if (res && res.errCode === 2) {
                 toast.error(res.errMessage)

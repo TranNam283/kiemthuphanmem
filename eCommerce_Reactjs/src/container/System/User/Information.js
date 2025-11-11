@@ -1,6 +1,5 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import DatePicker from '../../../component/input/DatePicker';
@@ -8,8 +7,6 @@ import moment from 'moment'
 import { getDetailUserById, UpdateUserService, handleSendVerifyEmail } from '../../../services/userService';
 import { useFetchAllcode } from '../../customize/fetch';
 import CommonUtils from '../../../utils/CommonUtils';
-import Lightbox from 'react-image-lightbox';
-import 'react-image-lightbox/style.css';
 const Information = () => {
 
 
@@ -21,6 +18,26 @@ const Information = () => {
         firstName: '', lastName: '', address: '', phonenumber: '', genderId: '', dob: '', roleId: '', email: '', image: '', isActiveEmail: '', imageReview: ''
     });
     const { data: dataGender } = useFetchAllcode('GENDER');
+    const setStateUser = useCallback((data) => {
+        setInputValues(() => ({
+            firstName: data.firstName || '',
+            lastName: data.lastName || '',
+            address: data.address || '',
+            phonenumber: data.phonenumber || '',
+            genderId: data.genderId || '',
+            dob: data.dob || '',
+            roleId: data.roleId || '',
+            email: data.email || '',
+            image: data.image || "https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg",
+            isActiveEmail: data.isActiveEmail || 0,
+            imageReview: ''
+        }))
+        if (data.dob) {
+            setbirthday(moment.unix(+data.dob / 1000).locale('vi').format('DD/MM/YYYY'))
+        } else {
+            setbirthday('')
+        }
+    }, [])
     useEffect(() => {
 
         let fetchUser = async () => {
@@ -31,25 +48,7 @@ const Information = () => {
             }
         }
         fetchUser();
-    }, [])
-    let setStateUser = (data) => {
-
-        setInputValues({
-            ...inputValues,
-            ["firstName"]: data.firstName,
-            ["lastName"]: data.lastName,
-            ["address"]: data.address,
-            ["phonenumber"]: data.phonenumber,
-            ["genderId"]: data.genderId,
-            ["roleId"]: data.roleId,
-            ["email"]: data.email,
-            ["id"]: data.id,
-            ["dob"]: data.dob,
-            ["image"]: data.image ? data.image : "https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg",
-            ["isActiveEmail"]: data.isActiveEmail
-        })
-        setbirthday(moment.unix(+data.dob / 1000).locale('vi').format('DD/MM/YYYY'))
-    }
+    }, [id, setStateUser])
     const handleOnChange = event => {
         const { name, value } = event.target;
         setInputValues({ ...inputValues, [name]: value });
@@ -60,7 +59,6 @@ const Information = () => {
         setisChangeDate(true)
     }
     let handleSaveInfor = async () => {
-        console.log(inputValues.image)
         let res = await UpdateUserService({
             id: id,
             firstName: inputValues.firstName,
@@ -91,14 +89,17 @@ const Information = () => {
     }
     let handleOnChangeImage = async (event) => {
         let data = event.target.files;
-        let file = data[0];
+        let file = data && data[0];
+        if(!file){
+            return;
+        }
         if(file.size > 31312281){
             toast.error("Dung lượng file bé hơn 30mb")
         }
         else{
             let base64 = await CommonUtils.getBase64(file);
             let objectUrl = URL.createObjectURL(file)
-            setInputValues({ ...inputValues, ["image"]: base64, ["imageReview"]: objectUrl })
+            setInputValues((prevState) => ({ ...prevState, image: base64, imageReview: objectUrl }))
 
         }
     }
@@ -107,7 +108,7 @@ const Information = () => {
             <div className="row">
                 <div className="col-md-3 border-right">
                     <div className="d-flex flex-column align-items-center text-center p-3 py-5">
-                        <img className="rounded-circle mt-5" height="170px" style={{ objectFit: "cover" }} width="150px" src={inputValues.image} />
+                        <img className="rounded-circle mt-5" height="170px" style={{ objectFit: "cover" }} width="150px" src={inputValues.image} alt="user avatar" />
                         <span className="font-weight-bold">{inputValues.lastName}</span>
                         <div className="box-email-verify">
                             <span className="text-black-50">{inputValues.email}

@@ -1,12 +1,9 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createNewTypeShipService, getDetailTypeShipByIdService, updateTypeShipService } from '../../../services/userService';
 
 import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
-
-import moment from 'moment';
 const AddTypeShip = (props) => {
 
 
@@ -20,18 +17,21 @@ const AddTypeShip = (props) => {
         type: '', price: ''
     });
     useEffect(() => {
-
-        if (id) {
-            let fetchDetailTypeShip = async () => {
-                setisActionADD(false)
-                let typeship = await getDetailTypeShipByIdService(id)
-                if (typeship && typeship.errCode === 0) {
-                    setInputValues({ ...inputValues, ["type"]: typeship.data.type, ["price"]: typeship.data.price })
-                }
-            }
-            fetchDetailTypeShip()
+        if (!id) {
+            return;
         }
-    }, [])
+        const fetchDetailTypeShip = async () => {
+            setisActionADD(false);
+            let typeship = await getDetailTypeShipByIdService(id)
+            if (typeship && typeship.errCode === 0) {
+                setInputValues(() => ({
+                    type: typeship.data.type || '',
+                    price: typeship.data.price || ''
+                }))
+            }
+        }
+        fetchDetailTypeShip()
+    }, [id])
 
     const handleOnChange = event => {
         const { name, value } = event.target;
@@ -47,9 +47,8 @@ const AddTypeShip = (props) => {
             if (res && res.errCode === 0) {
                 toast.success("Thêm loại ship thành công")
                 setInputValues({
-                    ...inputValues,
-                    ["type"]: '',
-                    ["price"]: ''
+                    type: '',
+                    price: ''
                 })
             }
             else if (res && res.errCode === 2) {

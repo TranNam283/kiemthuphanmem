@@ -1,119 +1,142 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import DatePicker from '../../../component/input/DatePicker';
 import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 import { getSelectTypeVoucher, createNewVoucherService, getDetailVoucherByIdService, updateVoucherService } from '../../../services/userService';
 import moment from 'moment';
-const AddVoucher = (props) => {
 
-
-
-
-    const [dataTypeVoucher, setdataTypeVoucher] = useState([])
-
+const AddVoucher = () => {
+    const [dataTypeVoucher, setdataTypeVoucher] = useState([]);
     const { id } = useParams();
     const [inputValues, setInputValues] = useState({
-        fromDate: '', toDate: '', typeVoucherId: '', amount: '', codeVoucher: '', isChangeFromDate: false, isChangeToDate: false, isActionADD: true,
-        fromDateUpdate: '', toDateUpdate: ''
+        fromDate: '',
+        toDate: '',
+        typeVoucherId: '',
+        amount: '',
+        codeVoucher: '',
+        isChangeFromDate: false,
+        isChangeToDate: false,
+        isActionADD: true,
+        fromDateUpdate: '',
+        toDateUpdate: ''
     });
-    if (dataTypeVoucher && dataTypeVoucher.length > 0 && inputValues.typeVoucherId === '') {
 
-        setInputValues({ ...inputValues, ["typeVoucherId"]: dataTypeVoucher[0].id })
-    }
+    const setStateVoucher = useCallback((data) => {
+        setInputValues((prev) => ({
+            ...prev,
+            fromDate: moment.unix(+data.fromDate / 1000).locale('vi').format('DD/MM/YYYY'),
+            toDate: moment.unix(+data.toDate / 1000).locale('vi').format('DD/MM/YYYY'),
+            typeVoucherId: data.typeVoucherId,
+            amount: data.amount,
+            codeVoucher: data.codeVoucher,
+            isActionADD: false,
+            fromDateUpdate: data.fromDate,
+            toDateUpdate: data.toDate
+        }));
+    }, []);
+
     useEffect(() => {
-        let fetchTypeVoucher = async () => {
-            let typevoucher = await getSelectTypeVoucher()
+        const fetchTypeVoucher = async () => {
+            const typevoucher = await getSelectTypeVoucher();
             if (typevoucher && typevoucher.errCode === 0) {
-                setdataTypeVoucher(typevoucher.data)
+                setdataTypeVoucher(typevoucher.data);
             }
+        };
+
+        fetchTypeVoucher();
+    }, []);
+
+    useEffect(() => {
+        if (!id) {
+            return;
         }
-        fetchTypeVoucher()
-        if (id) {
-            let fetchVoucher = async () => {
-                let voucher = await getDetailVoucherByIdService(id)
-                if (voucher && voucher.errCode === 0) {
-                    setStateVoucher(voucher.data)
-                }
+
+        const fetchVoucher = async () => {
+            const voucher = await getDetailVoucherByIdService(id);
+            if (voucher && voucher.errCode === 0) {
+                setStateVoucher(voucher.data);
             }
-            fetchVoucher()
+        };
+
+        fetchVoucher();
+    }, [id, setStateVoucher]);
+
+    useEffect(() => {
+        if (dataTypeVoucher.length === 0 || !inputValues.isActionADD) {
+            return;
         }
-    }, [])
-    let setStateVoucher = (data) => {
-        console.log(data.toDate)
-        setInputValues({
-            ...inputValues,
-            ["fromDate"]: moment.unix(+data.fromDate / 1000).locale('vi').format('DD/MM/YYYY'),
-            ["toDate"]: moment.unix(+data.toDate / 1000).locale('vi').format('DD/MM/YYYY'),
-            ["typeVoucherId"]: data.typeVoucherId,
-            ["amount"]: data.amount,
-            ["codeVoucher"]: data.codeVoucher,
-            ["isActionADD"]: false,
-            ["fromDateUpdate"]: data.fromDate,
-            ["toDateUpdate"]: data.toDate
-        })
-    }
-    const handleOnChange = event => {
+
+        setInputValues((prev) => {
+            if (prev.typeVoucherId) {
+                return prev;
+            }
+            return {
+                ...prev,
+                typeVoucherId: dataTypeVoucher[0].id
+            };
+        });
+    }, [dataTypeVoucher, inputValues.isActionADD]);
+
+    const handleOnChange = (event) => {
         const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
-
+        setInputValues((prev) => ({ ...prev, [name]: value }));
     };
-    let handleOnChangeDatePickerFromDate = (date) => {
-        setInputValues({
-            ...inputValues,
-            ["fromDate"]: date[0],
-            ["isChangeFromDate"]: true
-        })
 
-    }
-    let handleOnChangeDatePickerToDate = (date) => {
-        setInputValues({
-            ...inputValues,
-            ["toDate"]: date[0],
-            ["isChangeToDate"]: true
-        })
+    const handleOnChangeDatePickerFromDate = (date) => {
+        setInputValues((prev) => ({
+            ...prev,
+            fromDate: date[0],
+            isChangeFromDate: true
+        }));
+    };
 
-    }
-    let handleSaveInforVoucher = async () => {
+    const handleOnChangeDatePickerToDate = (date) => {
+        setInputValues((prev) => ({
+            ...prev,
+            toDate: date[0],
+            isChangeToDate: true
+        }));
+    };
+
+    const handleSaveInforVoucher = async () => {
         if (inputValues.isActionADD === true) {
-            let response = await createNewVoucherService({
+            const response = await createNewVoucherService({
                 fromDate: new Date(inputValues.fromDate).getTime(),
                 toDate: new Date(inputValues.toDate).getTime(),
                 typeVoucherId: inputValues.typeVoucherId,
                 amount: inputValues.amount,
                 codeVoucher: inputValues.codeVoucher
-            })
+            });
             if (response && response.errCode === 0) {
-                toast.success("Tạo mã voucher thành công !")
-                setInputValues({
-                    ...inputValues,
-                    ["fromDate"]: '',
-                    ["toDate"]: '',
-                    ["typeVoucherId"]: '',
-                    ["amount"]: '',
-                    ["codeVoucher"]: '',
-                })
+                toast.success('Tạo mã voucher thành công !');
+                setInputValues((prev) => ({
+                    ...prev,
+                    fromDate: '',
+                    toDate: '',
+                    typeVoucherId: '',
+                    amount: '',
+                    codeVoucher: ''
+                }));
             } else {
-                toast.error(response.errMessage)
+                toast.error(response.errMessage);
             }
         } else {
-
-            let response = await updateVoucherService({
+            const response = await updateVoucherService({
                 toDate: inputValues.isChangeToDate === false ? inputValues.toDateUpdate : new Date(inputValues.toDate).getTime(),
                 fromDate: inputValues.isChangeFromDate === false ? inputValues.fromDateUpdate : new Date(inputValues.fromDate).getTime(),
-
                 typeVoucherId: inputValues.typeVoucherId,
                 amount: inputValues.amount,
                 codeVoucher: inputValues.codeVoucher,
-                id: id
-            })
+                id
+            });
             if (response && response.errCode === 0) {
-                toast.success("Cập nhật voucher thành công !")
-
-            } else toast.error(response.errMessage)
+                toast.success('Cập nhật voucher thành công !');
+            } else {
+                toast.error(response.errMessage);
+            }
         }
-    }
+    };
     return (
         <div className="container-fluid px-4">
             <h1 className="mt-4">Quản lý mã voucher</h1>

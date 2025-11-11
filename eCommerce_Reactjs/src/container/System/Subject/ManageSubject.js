@@ -1,47 +1,35 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useFetchAllcode } from '../../customize/fetch';
+import React, { useCallback, useEffect, useState } from 'react';
 import { DeleteAllcodeService, getListAllCodeService } from '../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 import FormSearch from '../../../component/Search/FormSearch';
 const ManageSubject = () => {
 
-    const [dataSubject, setdataSubject] = useState([])
     const [count, setCount] = useState('')
     const [numberPage, setnumberPage] = useState('')
     const [keyword, setkeyword] = useState('')
-    useEffect(() => {
-      
-         
-            fetchData(keyword);
-      
-
-    }, [])
-    let fetchData = async (keyword) => {
+    const [dataSubject, setdataSubject] = useState([])
+    const fetchData = useCallback(async (searchKeyword) => {
         let arrData = await getListAllCodeService({
 
             type: 'SUBJECT',
             limit: PAGINATION.pagerow,
             offset: 0,
-            keyword:keyword
+            keyword: searchKeyword
 
         })
         if (arrData && arrData.errCode === 0) {
             setdataSubject(arrData.data)
             setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
         }
-    }
+    }, [])
+    useEffect(() => {
+        fetchData(keyword);
+
+    }, [fetchData, keyword])
     let handleDeleteSubject = async (event, id) => {
         event.preventDefault();
         let res = await DeleteAllcodeService(id)
@@ -52,7 +40,7 @@ const ManageSubject = () => {
                 type: 'SUBJECT',
                 limit: PAGINATION.pagerow,
                 offset: numberPage * PAGINATION.pagerow,
-                keyword:keyword
+                keyword: keyword
 
             })
             if (arrData && arrData.errCode === 0) {
@@ -69,7 +57,7 @@ const ManageSubject = () => {
             type: 'SUBJECT',
             limit: PAGINATION.pagerow,
             offset: number.selected * PAGINATION.pagerow,
-            keyword:keyword
+            keyword: keyword
 
         })
         if (arrData && arrData.errCode === 0) {
@@ -77,25 +65,23 @@ const ManageSubject = () => {
 
         }
     }
-    let handleSearchSubject = (keyword) =>{
-        fetchData(keyword)
-        setkeyword(keyword)
+    let handleSearchSubject = (value) => {
+        setkeyword(value)
     }
-    let handleOnchangeSearch = (keyword) =>{
-        if(keyword === ''){
-            fetchData(keyword)
-            setkeyword(keyword)
+    let handleOnchangeSearch = (value) => {
+        if (value === '') {
+            setkeyword(value)
         }
     }
-    let handleOnClickExport = async () =>{
+    let handleOnClickExport = async () => {
         let res = await getListAllCodeService({
             type: 'SUBJECT',
             limit: '',
             offset: '',
-            keyword:''
+            keyword: ''
         })
-        if(res && res.errCode == 0){
-            await CommonUtils.exportExcel(res.data,"Danh sách chủ đề","ListSubject")
+        if (res && res.errCode === 0) {
+            await CommonUtils.exportExcel(res.data, "Danh sách chủ đề", "ListSubject")
         }
     }
     return (
@@ -139,7 +125,7 @@ const ManageSubject = () => {
                                                 <td>
                                                     <Link to={`/admin/edit-Brand/${item.id}`}>Edit</Link>
                                                     &nbsp; &nbsp;
-                                                    <a href="#" onClick={(event) => handleDeleteSubject(event, item.id)} >Delete</a>
+                                                    <button type="button" className="btn btn-link p-0" onClick={(event) => handleDeleteSubject(event, item.id)} >Delete</button>
                                                 </td>
                                             </tr>
                                         )

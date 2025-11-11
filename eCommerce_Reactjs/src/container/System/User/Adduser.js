@@ -1,12 +1,10 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createNewUser, getDetailUserById, UpdateUserService } from '../../../services/userService';
 import DatePicker from '../../../component/input/DatePicker';
 import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 import { useFetchAllcode } from '../../customize/fetch';
-import localization from 'moment/locale/vi';
 import moment from 'moment';
 const Adduser = (props) => {
 
@@ -21,21 +19,21 @@ const Adduser = (props) => {
         email: '', password: '', firstName: '', lastName: '', address: '', phonenumber: '', genderId: '', roleId: '', id: '', dob: ''
     });
 
-    let setStateUser = (data) => {
-        setInputValues({
-            ...inputValues,
-            ["firstName"]: data.firstName,
-            ["lastName"]: data.lastName,
-            ["address"]: data.address,
-            ["phonenumber"]: data.phonenumber,
-            ["genderId"]: data.genderId,
-            ["roleId"]: data.roleId,
-            ["email"]: data.email,
-            ["id"]: data.id,
-            ["dob"]: data.dob
-        })
+    const setStateUser = useCallback((data) => {
+        setInputValues(() => ({
+            email: data.email || '',
+            password: '',
+            firstName: data.firstName || '',
+            lastName: data.lastName || '',
+            address: data.address || '',
+            phonenumber: data.phonenumber || '',
+            genderId: data.genderId || '',
+            roleId: data.roleId || '',
+            id: data.id || '',
+            dob: data.dob || ''
+        }));
         setbirthday(moment.unix(+data.dob / 1000).locale('vi').format('DD/MM/YYYY'))
-    }
+    }, [])
     useEffect(() => {
 
         if (id) {
@@ -48,7 +46,7 @@ const Adduser = (props) => {
             }
             fetchUser()
         }
-    }, [])
+    }, [id, setStateUser])
     const handleOnChange = event => {
         const { name, value } = event.target;
         setInputValues({ ...inputValues, [name]: value });
@@ -59,10 +57,18 @@ const Adduser = (props) => {
     const { data: dataRole } = useFetchAllcode('ROLE')
 
 
-    if (dataGender && dataGender.length > 0 && inputValues.genderId === '' && dataRole && dataRole.length > 0 && inputValues.roleId === '') {
-        console.log(dataRole)
-        setInputValues({ ...inputValues, ["genderId"]: dataGender[0].code, ["roleId"]: dataRole[0].code })
-    }
+    useEffect(() => {
+        if (!isActionADD) {
+            return;
+        }
+        if (dataGender && dataGender.length > 0 && dataRole && dataRole.length > 0) {
+            setInputValues((prevState) => ({
+                ...prevState,
+                genderId: prevState.genderId || dataGender[0].code,
+                roleId: prevState.roleId || dataRole[0].code
+            }));
+        }
+    }, [dataGender, dataRole, isActionADD])
 
 
 
@@ -88,15 +94,16 @@ const Adduser = (props) => {
             if (res && res.errCode === 0) {
                 toast.success("Thêm mới người dùng thành công")
                 setInputValues({
-                    ...inputValues,
-                    ["firstName"]: '',
-                    ["lastName"]: '',
-                    ["address"]: '',
-                    ["phonenumber"]: '',
-                    ["genderId"]: '',
-                    ["roleId"]: '',
-                    ["email"]: '',
-
+                    email: '',
+                    password: '',
+                    firstName: '',
+                    lastName: '',
+                    address: '',
+                    phonenumber: '',
+                    genderId: '',
+                    roleId: '',
+                    id: '',
+                    dob: ''
                 })
                 setbirthday('')
             } else {

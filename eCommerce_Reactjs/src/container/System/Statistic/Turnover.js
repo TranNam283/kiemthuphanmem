@@ -1,9 +1,7 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { getStatisticOverturn } from '../../../services/userService';
 // import DatePicker from '../../../component/input/DatePicker';
-import { toast } from 'react-toastify';
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import CommonUtils from '../../../utils/CommonUtils';
 import "react-datepicker/dist/react-datepicker.css";
@@ -80,7 +78,7 @@ const Turnover = (props) => {
                             </div>
                         </div>
                         <div className="form-row">
-                            {type == "day" &&
+                            {type === "day" &&
                                 <>
 
                                     <div className="form-group col-md-2">
@@ -101,7 +99,7 @@ const Turnover = (props) => {
 
                                 </>
                             }
-                            {type == "month" &&
+                            {type === "month" &&
                                 <>
                                     <div className="form-group col-md-2">
                                         <label htmlFor="inputCity">Chọn tháng</label>
@@ -115,7 +113,7 @@ const Turnover = (props) => {
                                     </div>
                                 </>
                             }
-                            {type == "year" &&
+                            {type === "year" &&
                                 <>
                                     <div className="form-group col-md-2">
                                         <label htmlFor="inputCity">Chọn năm</label>
@@ -169,7 +167,7 @@ const Turnover = (props) => {
                                                 <td>{moment.utc(item.updatedAt).local().format('DD/MM/YYYY HH:mm:ss')}</td>
                                                 <td>{item.typeShipData.type}</td>
                                                 <td>{item.voucherData.codeVoucher}</td>
-                                                <td>{item.isPaymentOnlien == 0 ? 'Thanh toán tiền mặt' : 'Thanh toán online'}</td>
+                                                <td>{item.isPaymentOnlien === 0 ? 'Thanh toán tiền mặt' : 'Thanh toán online'}</td>
                                                 <td>{item.statusOrderData.value}</td>
                                                 <td>{CommonUtils.formatter.format(item.totalpriceProduct)}</td>
                                                 <td>

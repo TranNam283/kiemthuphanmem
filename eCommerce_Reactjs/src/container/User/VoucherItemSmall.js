@@ -1,13 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import VoucherItem from '../Voucher/VoucherItem';
+import React from 'react';
 import logoVoucher from '../../../src/resources/img/logoVoucher.png'
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
 import './VoucherItemSmall.scss';
 import { useDispatch } from 'react-redux';
 import { ChooseVoucherStart } from '../../action/ShopCartAction';
@@ -27,7 +19,7 @@ function VoucherItemSmall(props) {
 
         <div className="box-voucher-small">
             <div className="content-left">
-                <img src={logoVoucher}></img>
+                <img src={logoVoucher} alt="voucher" />
                 <span>{props.name}</span>
             </div>
             <div className="border-center">
@@ -36,7 +28,14 @@ function VoucherItemSmall(props) {
             <div className="content-right">
                 <div className="box-content-right">
                     <span className="name-voucher">Giảm {props.typeVoucher}</span>
-                    <a style={{ cursor: 'pointer' }} onClick={() => handleClickApplyVoucher()} className="use-voucher">Dùng ngay</a>
+                    <button
+                        type="button"
+                        style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
+                        onClick={() => handleClickApplyVoucher()}
+                        className="use-voucher"
+                    >
+                        Dùng ngay
+                    </button>
                     <span className="max-value-voucher">Giảm tối đa {props.maxValue}</span>
                     <div className="box-percent">
                         <div className="wrap-percent">

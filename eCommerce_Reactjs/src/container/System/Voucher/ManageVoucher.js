@@ -1,19 +1,11 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useFetchAllcode } from '../../customize/fetch';
+import React, { useEffect, useState } from 'react';
 import { deleteVoucherService, getAllVoucher } from '../../../services/userService';
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from 'react-router-dom';
 const ManageVoucher = () => {
 
     const [dataVoucher, setdataVoucher] = useState([])
@@ -72,19 +64,19 @@ const ManageVoucher = () => {
 
         }
     }
-    let handleOnClickExport =async () =>{
+    let handleOnClickExport = async () => {
         let res = await getAllVoucher({
           
             limit: '',
             offset: '',
             
         })
-        if(res && res.errCode === 0){
+        if (res && res.errCode === 0) {
             res.data.forEach(item => {
-               item.fromDate = moment.unix(item.fromDate / 1000).format('DD/MM/YYYY')
-               item.toDate=  moment.unix(item.toDate / 1000).format('DD/MM/YYYY')
+                item.fromDate = moment.unix(item.fromDate / 1000).format('DD/MM/YYYY')
+                item.toDate = moment.unix(item.toDate / 1000).format('DD/MM/YYYY')
             })
-            await CommonUtils.exportExcel(res.data,"Danh sách voucher","ListVoucher")
+            await CommonUtils.exportExcel(res.data, "Danh sách voucher", "ListVoucher")
         }
        
     }

@@ -1,48 +1,62 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createNewTypeVoucherService, getDetailTypeVoucherByIdService, updateTypeVoucherService } from '../../../services/userService';
-
 import { toast } from 'react-toastify';
-import { useParams } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import { useFetchAllcode } from '../../customize/fetch';
-import moment from 'moment';
-const AddTypeVoucher = (props) => {
 
+const initialInputState = {
+    typeVoucher: '',
+    value: '',
+    maxValue: '',
+    minValue: ''
+};
 
-    const { data: dataTypeVoucher } = useFetchAllcode('DISCOUNT')
-    const [isActionADD, setisActionADD] = useState(true)
-
-
+const AddTypeVoucher = () => {
+    const { data: dataTypeVoucher } = useFetchAllcode('DISCOUNT');
+    const [isActionADD, setisActionADD] = useState(true);
     const { id } = useParams();
-    const [inputValues, setInputValues] = useState({
-        typeVoucher: '', value: '', maxValue: '', minValue: ''
-    });
-    if (dataTypeVoucher && dataTypeVoucher.length > 0 && inputValues.typeVoucher === '') {
-
-        setInputValues({ ...inputValues, ["typeVoucher"]: dataTypeVoucher[0].code })
-    }
+    const [inputValues, setInputValues] = useState(initialInputState);
 
     useEffect(() => {
-
-        if (id) {
-            let fetchDetailTypeShip = async () => {
-                setisActionADD(false)
-                let typevoucher = await getDetailTypeVoucherByIdService(id)
-                if (typevoucher && typevoucher.errCode === 0) {
-                    setInputValues({
-                        ...inputValues, ["typeVoucher"]: typevoucher.data.typeVoucher, ["value"]: typevoucher.data.value,
-                        ["maxValue"]: typevoucher.data.maxValue, ["minValue"]: typevoucher.data.minValue
-                    })
-                }
-            }
-            fetchDetailTypeShip()
+        if (!id) {
+            return;
         }
-    }, [])
+        const fetchDetailTypeShip = async () => {
+            setisActionADD(false);
+            const typevoucher = await getDetailTypeVoucherByIdService(id);
+            if (typevoucher && typevoucher.errCode === 0) {
+                setInputValues({
+                    typeVoucher: typevoucher.data.typeVoucher || '',
+                    value: typevoucher.data.value || '',
+                    maxValue: typevoucher.data.maxValue || '',
+                    minValue: typevoucher.data.minValue || ''
+                });
+            }
+        };
+        fetchDetailTypeShip();
+    }, [id]);
+
+    useEffect(() => {
+        if (!isActionADD) {
+            return;
+        }
+        if (dataTypeVoucher && dataTypeVoucher.length > 0) {
+            setInputValues((prevState) => {
+                if (prevState.typeVoucher) {
+                    return prevState;
+                }
+                return {
+                    ...prevState,
+                    typeVoucher: dataTypeVoucher[0].code
+                };
+            });
+        }
+    }, [dataTypeVoucher, isActionADD]);
 
     const handleOnChange = event => {
         const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
+        setInputValues((prevState) => ({ ...prevState, [name]: value }));
 
     };
     let handleSaveTypeVoucher = async () => {
@@ -55,13 +69,7 @@ const AddTypeVoucher = (props) => {
             })
             if (res && res.errCode === 0) {
                 toast.success("Thêm loại voucher thành công")
-                setInputValues({
-                    ...inputValues,
-                    ["typeVoucher"]: '',
-                    ["value"]: '',
-                    ["maxValue"]: '',
-                    ["minValue"]: '',
-                })
+                setInputValues(initialInputState)
             }
             else if (res && res.errCode === 2) {
                 toast.error(res.errMessage)

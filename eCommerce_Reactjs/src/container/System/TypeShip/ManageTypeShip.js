@@ -1,19 +1,10 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useFetchAllcode } from '../../customize/fetch';
+import React, { useCallback, useEffect, useState } from 'react';
 import { deleteTypeShipService, getAllTypeShip } from '../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 import FormSearch from '../../../component/Search/FormSearch';
 const ManageTypeShip = () => {
 
@@ -21,25 +12,25 @@ const ManageTypeShip = () => {
     const [count, setCount] = useState('')
     const [numberPage, setnumberPage] = useState('')
     const [keyword, setkeyword] = useState('')
-    useEffect(() => {
-
-        fetchData(keyword);
-
-
-    }, [])
-    let fetchData = async (keyword) => {
+    const fetchData = useCallback(async (searchKeyword) => {
         let arrData = await getAllTypeShip({
 
             limit: PAGINATION.pagerow,
             offset: 0,
-            keyword: keyword
+            keyword: searchKeyword
 
         })
         if (arrData && arrData.errCode === 0) {
             setdataTypeShip(arrData.data)
             setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
         }
-    }
+    }, [])
+    useEffect(() => {
+
+        fetchData(keyword);
+
+
+    }, [fetchData, keyword])
     let handleDeleteTypeShip = async (id) => {
 
         let res = await deleteTypeShipService({
@@ -75,14 +66,12 @@ const ManageTypeShip = () => {
 
         }
     }
-    let handleSearchTypeShip = (keyword) => {
-        fetchData(keyword)
-        setkeyword(keyword)
+    let handleSearchTypeShip = (value) => {
+        setkeyword(value)
     }
-    let handleOnchangeSearch = (keyword) => {
-        if (keyword === '') {
-            fetchData(keyword)
-            setkeyword(keyword)
+    let handleOnchangeSearch = (value) => {
+        if (value === '') {
+            setkeyword(value)
         }
     }
     let handleOnClickExport = async () => {
@@ -92,7 +81,7 @@ const ManageTypeShip = () => {
             offset: '',
             keyword: ''
         })
-        if (res && res.errCode == 0) {
+        if (res && res.errCode === 0) {
             await CommonUtils.exportExcel(res.data, "Danh sách loại ship", "ListTypeShip")
         }
 

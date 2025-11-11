@@ -1,49 +1,34 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useFetchAllcode } from '../../customize/fetch';
+import React, { useCallback, useEffect, useState } from 'react';
 import { deleteSupplierService, getAllSupplier } from '../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import FormSearch from '../../../component/Search/FormSearch';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const ManageSupplier = () => {
     const [keyword, setkeyword] = useState('')
     const [dataSupplier, setdataSupplier] = useState([])
     const [count, setCount] = useState('')
     const [numberPage, setnumberPage] = useState('')
-    useEffect(() => {
-        try {
-           
-            fetchData(keyword);
-        } catch (error) {
-            console.log(error)
-        }
-
-    }, [])
-    let fetchData = async (keyword) => {
+    const fetchData = useCallback(async (searchKeyword) => {
         let arrData = await getAllSupplier({
 
            
             limit: PAGINATION.pagerow,
             offset: 0,
-            keyword:keyword
+            keyword: searchKeyword
 
         })
         if (arrData && arrData.errCode === 0) {
             setdataSupplier(arrData.data)
             setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
         }
-    }
+    }, [])
+    useEffect(() => {
+        fetchData(keyword);
+    }, [fetchData, keyword])
     let handleDeleteSupplier = async (event, id) => {
         event.preventDefault();
         let res = await deleteSupplierService({
@@ -58,7 +43,7 @@ const ManageSupplier = () => {
               
                 limit: PAGINATION.pagerow,
                 offset: numberPage * PAGINATION.pagerow,
-                keyword:keyword
+                keyword: keyword
             })
             if (arrData && arrData.errCode === 0) {
                 setdataSupplier(arrData.data)
@@ -74,7 +59,7 @@ const ManageSupplier = () => {
           
             limit: PAGINATION.pagerow,
             offset: number.selected * PAGINATION.pagerow,
-            keyword:keyword
+            keyword: keyword
 
         })
         if (arrData && arrData.errCode === 0) {
@@ -82,14 +67,12 @@ const ManageSupplier = () => {
 
         }
     }
-    let handleSearchSupplier = (keyword) =>{
-        fetchData(keyword)
-        setkeyword(keyword)
+    let handleSearchSupplier = (value) =>{
+        setkeyword(value)
     }
-    let handleOnchangeSearch = (keyword) =>{
-        if(keyword === ''){
-            fetchData(keyword)
-            setkeyword(keyword)
+    let handleOnchangeSearch = (value) =>{
+        if(value === ''){
+            setkeyword(value)
         }
     }
     let handleOnClickExport =async () =>{
@@ -98,7 +81,7 @@ const ManageSupplier = () => {
             offset: '',
             keyword:''
         })
-        if(res && res.errCode == 0){
+        if(res && res.errCode === 0){
             await CommonUtils.exportExcel(res.data,"Danh sách nhà cung cấp","ListSupplier")
         }
        
@@ -149,7 +132,7 @@ const ManageSupplier = () => {
                                                 <td>
                                                     <Link to={`/admin/edit-Supplier/${item.id}`}>Edit</Link>
                                                     &nbsp; &nbsp;
-                                                    <a href="#" onClick={(event) => handleDeleteSupplier(event, item.id)} >Delete</a>
+                                                    <button type="button" className="btn btn-link p-0" onClick={(event) => handleDeleteSupplier(event, item.id)} >Delete</button>
                                                 </td>
                                             </tr>
                                         )

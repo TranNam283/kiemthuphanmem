@@ -12,10 +12,10 @@ import {
   ArcElement
 } from 'chart.js';
 import { Line, Pie, Bar } from 'react-chartjs-2';
-import { getCountCardStatistic, getCountStatusOrder, getStatisticByMonth, getStatisticByDay } from '../../services/userService'
-import moment from 'moment'
+import { getCountCardStatistic, getCountStatusOrder, getStatisticByMonth, getStatisticByDay } from '../../services/userService';
+import moment from 'moment';
 import { Link } from 'react-router-dom';
-import DatePicker from "react-datepicker";
+import DatePicker from 'react-datepicker';
 
 import "react-datepicker/dist/react-datepicker.css";
 ChartJS.register(
@@ -32,7 +32,7 @@ ChartJS.register(
 
 
 
-let getOptions = (title) => {
+const getOptions = (title) => {
   return {
     responsive: true,
     plugins: {
@@ -52,23 +52,55 @@ let getOptions = (title) => {
 
 
 const Home = () => {
-  const [CountCard, setCountCard] = useState({})
-  const [CountStatusOrder, setCountStatusOrder] = useState({})
-  const [StatisticOrderByMonth, setStatisticOrderByMonth] = useState({})
-  const [StatisticOrderByDay, setStatisticOrderByDay] = useState({})
+  const [CountCard, setCountCard] = useState({});
+  const [CountStatusOrder, setCountStatusOrder] = useState({});
+  const [StatisticOrderByMonth, setStatisticOrderByMonth] = useState({});
+  const [StatisticOrderByDay, setStatisticOrderByDay] = useState({});
   const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
   const [DateTime, setDateTime] = useState(new Date());
-  const [type, settype] = useState('month')
+  const [type, settype] = useState('month');
   const [month, setmonth] = useState(new Date());
   const [year, setyear] = useState(new Date());
-  useEffect(() => {
-    loadCountCard()
-    loadStatusOrder()
-    loadStatisticOrderByMonth(moment(year).format("YYYY"))
-    loadStatisticOrderByDay(moment(year).format("YYYY"), moment(new Date()).format("M"))
 
-  }, [])
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      const [countCardRes, statusOrderRes] = await Promise.all([
+        getCountCardStatistic(),
+        getCountStatusOrder({
+          oneDate: new Date(),
+          twoDate: null,
+          type: 'month'
+        })
+      ]);
+
+      if (countCardRes && countCardRes.errCode === 0) {
+        setCountCard(countCardRes.data);
+      }
+
+      if (statusOrderRes && statusOrderRes.errCode === 0) {
+        setCountStatusOrder(statusOrderRes.data);
+      }
+
+      const currentYear = moment().format('YYYY');
+      const currentMonth = moment().format('M');
+
+      const [monthStatisticRes, dayStatisticRes] = await Promise.all([
+        getStatisticByMonth(currentYear),
+        getStatisticByDay({ year: currentYear, month: currentMonth })
+      ]);
+
+      if (monthStatisticRes && monthStatisticRes.errCode === 0) {
+        setStatisticOrderByMonth(monthStatisticRes.data);
+      }
+
+      if (dayStatisticRes && dayStatisticRes.errCode === 0) {
+        setStatisticOrderByDay(dayStatisticRes.data);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
 
   const dataPie = {
     labels: CountStatusOrder.arrayLable,
@@ -120,55 +152,41 @@ const Home = () => {
         data: StatisticOrderByDay.arrayDayValue,
         backgroundColor: 'rgba(255, 99, 132, 0.5)',
       },
-
     ],
   };
-  let loadCountCard = async () => {
 
-    let res = await getCountCardStatistic()
-    if (res && res.errCode == 0) {
-      setCountCard(res.data)
-    }
-
-
-  }
-
-  let loadStatusOrder = async () => {
-
-    let res = await getCountStatusOrder({
-      oneDate: type == 'day' ? startDate : DateTime,
+  const handleOnclick = async () => {
+    const response = await getCountStatusOrder({
+      oneDate: type === 'day' ? startDate : DateTime,
       twoDate: endDate,
-      type: type
-    })
-    if (res && res.errCode == 0) {
-      setCountStatusOrder(res.data)
-    }
-  }
-  let handleOnclick = () => {
+      type
+    });
 
-    loadStatusOrder()
-  }
-  let loadStatisticOrderByMonth = async (year) => {
-    let res = await getStatisticByMonth(year)
-    if (res && res.errCode == 0) {
-      setStatisticOrderByMonth(res.data)
+    if (response && response.errCode === 0) {
+      setCountStatusOrder(response.data);
     }
-  }
-  let loadStatisticOrderByDay = async (year, month) => {
-    let res = await getStatisticByDay({ year, month })
-    if (res && res.errCode == 0) {
-      setStatisticOrderByDay(res.data)
-    }
-  }
-  let handleOnChangeYear = (year) => {
-    setyear(year)
-    loadStatisticOrderByMonth(moment(year).format("YYYY"))
-  }
-  let handleOnChangeDatePickerFromDate = (date) => {
+  };
 
-    setmonth(date)
-    loadStatisticOrderByDay(moment(date).format("YYYY"), moment(date).format("M"))
-  }
+  const handleOnChangeYear = async (selectedYear) => {
+    setyear(selectedYear);
+    const formattedYear = moment(selectedYear).format('YYYY');
+    const response = await getStatisticByMonth(formattedYear);
+    if (response && response.errCode === 0) {
+      setStatisticOrderByMonth(response.data);
+    }
+  };
+
+  const handleOnChangeDatePickerFromDate = async (date) => {
+    setmonth(date);
+    const response = await getStatisticByDay({
+      year: moment(date).format('YYYY'),
+      month: moment(date).format('M')
+    });
+    if (response && response.errCode === 0) {
+      setStatisticOrderByDay(response.data);
+    }
+  };
+
   return (
     <div className="container-fluid px-4">
       <h1 className="mt-4">THỐNG KÊ</h1>
@@ -189,7 +207,7 @@ const Home = () => {
           <div className="card bg-warning text-white mb-4">
             <div className="card-body">ĐÁNH GIÁ ({CountCard.countReview})</div>
             <div className="card-footer d-flex align-items-center justify-content-between">
-              <a className="small text-white stretched-link" href="#">Chi tiết</a>
+              <button type="button" className="small text-white stretched-link btn btn-link p-0">Chi tiết</button>
               <div className="small text-white"><i className="fas fa-angle-right" /></div>
             </div>
           </div>
@@ -238,7 +256,7 @@ const Home = () => {
               </div>
             </div>
             <div className="form-row">
-              {type == "day" &&
+              {type === "day" &&
                 <>
 
                   <div className="form-group col-md-8">
@@ -259,7 +277,7 @@ const Home = () => {
 
                 </>
               }
-              {type == "month" &&
+              {type === "month" &&
                 <>
                   <div className="form-group col-md-8">
                     <label htmlFor="inputCity">Chọn tháng</label>
@@ -273,7 +291,7 @@ const Home = () => {
                   </div>
                 </>
               }
-              {type == "year" &&
+              {type === "year" &&
                 <>
                   <div className="form-group col-md-8">
                     <label htmlFor="inputCity">Chọn năm</label>
@@ -292,7 +310,7 @@ const Home = () => {
             </div>
             <button type="button" onClick={() => handleOnclick()} className="btn btn-primary">Lọc</button>
           </form>
-          <Pie data={dataPie} options={getOptions('Thống kê trạng thái đơn hàng')} />;
+          <Pie data={dataPie} options={getOptions('Thống kê trạng thái đơn hàng')} />
         </div>
       </div>
       <div className='row'>

@@ -1,198 +1,290 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { createNewReceiptService,getAllSupplier,getAllProductAdmin } from '../../../services/userService';
-
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 
-import moment from 'moment';
-const AddReceipt = (props) => {
-    const [user, setUser] = useState({})
-    const [dataSupplier, setdataSupplier] = useState([])
-    const [dataProduct, setdataProduct] = useState([])
-    const [dataProductDetail, setdataProductDetail] = useState([])
-    const [dataProductDetailSize, setdataProductDetailSize] = useState([])
-    const [productDetailSizeId, setproductDetailSizeId] = useState('')
+import {
+    createNewReceiptService,
+    getAllProductAdmin,
+    getAllSupplier
+} from '../../../services/userService';
+
+const AddReceipt = () => {
+    const [user, setUser] = useState({});
+    const [dataSupplier, setDataSupplier] = useState([]);
+    const [dataProduct, setDataProduct] = useState([]);
+    const [dataProductDetail, setDataProductDetail] = useState([]);
+    const [dataProductDetailSize, setDataProductDetailSize] = useState([]);
+    const [productDetailId, setProductDetailId] = useState('');
+    const [productDetailSizeId, setProductDetailSizeId] = useState('');
     const [inputValues, setInputValues] = useState({
-        supplierId: '',quantity:'',price:'',productId:''
+        supplierId: '',
+        quantity: '',
+        price: '',
+        productId: ''
     });
-    if (dataSupplier && dataSupplier.length > 0 && inputValues.supplierId === '' && dataProduct && dataProduct.length > 0 && inputValues.productId === '' ) {
 
-        setInputValues({ ...inputValues, ["supplierId"]: dataSupplier[0].id, })
-        setdataProductDetail(dataProduct[0].productDetail)
-        setdataProductDetailSize(dataProduct[0].productDetail[0].productDetailSize)
-        setproductDetailSizeId(dataProduct[0].productDetail[0].productDetailSize[0].id)
-    }
-    useEffect(() => {
-        loadDataSupplier()
-        loadProduct()
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        setUser(userData)
-    }, [])
-    let loadDataSupplier = async () => {
-        let arrData = await getAllSupplier({
-
-           
+    const loadDataSupplier = useCallback(async () => {
+        const response = await getAllSupplier({
             limit: '',
             offset: '',
-            keyword:''
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataSupplier(arrData.data)
-            
+            keyword: ''
+        });
+        if (response && response.errCode === 0) {
+            setDataSupplier(response.data);
         }
-    }
-    let loadProduct = async () => {
-        let arrData = await getAllProductAdmin({
+    }, []);
 
+    const loadProduct = useCallback(async () => {
+        const response = await getAllProductAdmin({
             sortName: '',
             sortPrice: '',
             categoryId: 'ALL',
             brandId: 'ALL',
             limit: '',
             offset: '',
-            keyword:''
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataProduct(arrData.data)
-           
+            keyword: ''
+        });
+        if (response && response.errCode === 0) {
+            setDataProduct(response.data);
         }
-    }
-    const handleOnChange = event => {
-        const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
+    }, []);
 
+    useEffect(() => {
+        const init = async () => {
+            await Promise.all([loadDataSupplier(), loadProduct()]);
+            const storedUser = JSON.parse(localStorage.getItem('userData'));
+            setUser(storedUser || {});
+        };
+        void init();
+    }, [loadDataSupplier, loadProduct]);
+
+    useEffect(() => {
+        if (dataSupplier.length === 0) {
+            return;
+        }
+        setInputValues((prevState) => {
+            if (prevState.supplierId) {
+                return prevState;
+            }
+            return { ...prevState, supplierId: dataSupplier[0].id };
+        });
+    }, [dataSupplier]);
+
+    useEffect(() => {
+        if (dataProduct.length === 0) {
+            return;
+        }
+        setInputValues((prevState) => {
+            if (prevState.productId) {
+                return prevState;
+            }
+            return { ...prevState, productId: dataProduct[0].id };
+        });
+    }, [dataProduct]);
+
+    useEffect(() => {
+        const selectedProduct = dataProduct.find(
+            (product) => product.id === inputValues.productId
+        );
+        if (!selectedProduct) {
+            setDataProductDetail([]);
+            return;
+        }
+        setDataProductDetail(selectedProduct.productDetail || []);
+    }, [dataProduct, inputValues.productId]);
+
+    useEffect(() => {
+        if (dataProductDetail.length === 0) {
+            setProductDetailId('');
+            setDataProductDetailSize([]);
+            setProductDetailSizeId('');
+            return;
+        }
+        setProductDetailId((prevState) => {
+            if (prevState && dataProductDetail.some((detail) => detail.id === prevState)) {
+                return prevState;
+            }
+            return dataProductDetail[0].id;
+        });
+    }, [dataProductDetail]);
+
+    useEffect(() => {
+        const selectedDetail = dataProductDetail.find(
+            (detail) => detail.id === productDetailId
+        );
+        if (!selectedDetail) {
+            setDataProductDetailSize([]);
+            setProductDetailSizeId('');
+            return;
+        }
+        const sizes = selectedDetail.productDetailSize || [];
+        setDataProductDetailSize(sizes);
+        setProductDetailSizeId((prevState) => {
+            if (prevState && sizes.some((size) => size.id === prevState)) {
+                return prevState;
+            }
+            return sizes.length > 0 ? sizes[0].id : '';
+        });
+    }, [dataProductDetail, productDetailId]);
+
+    const handleOnChange = (event) => {
+        const { name, value } = event.target;
+        setInputValues((prevState) => ({ ...prevState, [name]: value }));
     };
-    const handleOnChangeProduct = event => {
-        const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value})
-        for(let i=0;i<dataProduct.length;i++){
-            if(dataProduct[i].id==value){
-             
-                setdataProductDetail(dataProduct[i].productDetail)
-                setdataProductDetailSize(dataProduct[i].productDetail[0].productDetailSize)
-                setproductDetailSizeId(dataProduct[i].productDetail[0].productDetailSize[0].id)
-            }
-        }
 
+    const handleOnChangeProduct = (event) => {
+        const { value } = event.target;
+        setInputValues((prevState) => ({ ...prevState, productId: value }));
     };
-    let handleOnChangeProductDetail = event =>{
-        const { name, value } = event.target;
-        for(let i=0;i<dataProductDetail.length;i++){
-            if(dataProductDetail[i].id==value){
-             
-                setdataProductDetailSize(dataProductDetail[i].productDetailSize)
-                setproductDetailSizeId(dataProductDetail[i].productDetailSize[0].id)
-            }
-        }
-    }
-    let handleSaveReceipt = async () => {
-      
-            let res = await createNewReceiptService({
-                supplierId:inputValues.supplierId,
-                userId:user.id,
-                productDetailSizeId:productDetailSizeId,
-                quantity:inputValues.quantity,
-                price:inputValues.price
-            })
-            if (res && res.errCode === 0) {
-                toast.success("Thêm nhập hàng thành công")
-                setInputValues({
-                    ...inputValues,
-                  
-                    ["quantity"]: '',
-                    ["price"]: ''
-                })
-            }
-            else if (res && res.errCode === 2) {
-                toast.error(res.errMessage)
-            }
-            else toast.error("Thêm nhập hàng thất bại")
-       
-    }
 
+    const handleOnChangeProductDetail = (event) => {
+        setProductDetailId(event.target.value);
+    };
+
+    const handleOnChangeProductDetailSize = (event) => {
+        setProductDetailSizeId(event.target.value);
+    };
+
+    const handleSaveReceipt = async () => {
+        const response = await createNewReceiptService({
+            supplierId: inputValues.supplierId,
+            userId: user.id,
+            productDetailSizeId,
+            quantity: inputValues.quantity,
+            price: inputValues.price
+        });
+
+        if (response && response.errCode === 0) {
+            toast.success('Thêm nhập hàng thành công');
+            setInputValues((prevState) => ({
+                ...prevState,
+                quantity: '',
+                price: ''
+            }));
+            return;
+        }
+        if (response && response.errCode === 2) {
+            toast.error(response.errMessage);
+            return;
+        }
+        toast.error('Thêm nhập hàng thất bại');
+    };
 
     return (
         <div className="container-fluid px-4">
             <h1 className="mt-4">Quản lý nhập hàng</h1>
-
-
             <div className="card mb-4">
                 <div className="card-header">
                     <i className="fas fa-table me-1" />
-                  Thêm mới nhập hàng
+                    Thêm mới nhập hàng
                 </div>
                 <div className="card-body">
                     <form>
                         <div className="form-row">
-                        <div className="form-group col-md-4">
-                                <label htmlFor="inputEmail4">Nhà cung cấp</label>
-                                <select value={inputValues.supplierId} name="supplierId" onChange={(event) => handleOnChange(event)} id="inputState" className="form-control">
-                                    {dataSupplier && dataSupplier.length > 0 &&
-                                        dataSupplier.map((item, index) => {
-                                            return (
-                                                <option key={index} value={item.id}>{item.name}</option>
-                                            )
-                                        })
-                                    }
+                            <div className="form-group col-md-4">
+                                <label htmlFor="inputSupplier">Nhà cung cấp</label>
+                                <select
+                                    value={inputValues.supplierId}
+                                    name="supplierId"
+                                    onChange={handleOnChange}
+                                    id="inputSupplier"
+                                    className="form-control"
+                                >
+                                    {dataSupplier.length > 0 &&
+                                        dataSupplier.map((item) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.name}
+                                            </option>
+                                        ))}
                                 </select>
-                        </div>
+                            </div>
                         </div>
                         <div className="form-row">
-                        <div className="form-group col-md-4">
-                                <label htmlFor="inputEmail4">Sản phẩm</label>
-                                <select  value={inputValues.productId} name="productId" onChange={(event) => handleOnChangeProduct(event)} id="inputState" className="form-control">
-                                    {dataProduct && dataProduct.length > 0 &&
-                                        dataProduct.map((item, index) => {
-                                            return (
-                                                <option key={index} value={item.id}>{item.name}</option>
-                                            )
-                                        })
-                                    }
+                            <div className="form-group col-md-4">
+                                <label htmlFor="inputProduct">Sản phẩm</label>
+                                <select
+                                    value={inputValues.productId}
+                                    name="productId"
+                                    onChange={handleOnChangeProduct}
+                                    id="inputProduct"
+                                    className="form-control"
+                                >
+                                    {dataProduct.length > 0 &&
+                                        dataProduct.map((item) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.name}
+                                            </option>
+                                        ))}
                                 </select>
-                        </div>
-                        <div className="form-group col-md-4">
-                                <label htmlFor="inputEmail4">Loại sản phẩm</label>
-                                <select  onChange={(event) => handleOnChangeProductDetail(event)} id="inputState" className="form-control">
-                                    {dataProductDetail && dataProductDetail.length > 0 &&
-                                        dataProductDetail.map((item, index) => {
-                                            return (
-                                                <option key={index} value={item.id}>{item.nameDetail}</option>
-                                            )
-                                        })
-                                    }
+                            </div>
+                            <div className="form-group col-md-4">
+                                <label htmlFor="inputProductDetail">Loại sản phẩm</label>
+                                <select
+                                    value={productDetailId}
+                                    onChange={handleOnChangeProductDetail}
+                                    id="inputProductDetail"
+                                    className="form-control"
+                                >
+                                    {dataProductDetail.length > 0 &&
+                                        dataProductDetail.map((item) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.nameDetail}
+                                            </option>
+                                        ))}
                                 </select>
-                        </div>
-                        <div className="form-group col-md-4">
-                                <label htmlFor="inputEmail4">Size sản phẩm</label>
-                                <select  value={productDetailSizeId} name="productDetailSizeId" onChange={(event) => setproductDetailSizeId(event.target.value)} id="inputState" className="form-control">
-                                    {dataProductDetailSize && dataProductDetailSize.length > 0 &&
-                                        dataProductDetailSize.map((item, index) => {
-                                            return (
-                                                <option key={index} value={item.id}>{item.sizeId}</option>
-                                            )
-                                        })
-                                    }
+                            </div>
+                            <div className="form-group col-md-4">
+                                <label htmlFor="inputProductSize">Size sản phẩm</label>
+                                <select
+                                    value={productDetailSizeId}
+                                    name="productDetailSizeId"
+                                    onChange={handleOnChangeProductDetailSize}
+                                    id="inputProductSize"
+                                    className="form-control"
+                                >
+                                    {dataProductDetailSize.length > 0 &&
+                                        dataProductDetailSize.map((item) => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.sizeId}
+                                            </option>
+                                        ))}
                                 </select>
-                        </div>
-                        <div className="form-group col-md-6">
-                                <label htmlFor="inputEmail4">Số lượng</label>
-                                <input type="number" value={inputValues.quantity} name="quantity" onChange={(event) => handleOnChange(event)} className="form-control" id="inputEmail4" />
                             </div>
                             <div className="form-group col-md-6">
-                                <label htmlFor="inputEmail4">Đơn giá</label>
-                                <input type="number" value={inputValues.price} name="price" onChange={(event) => handleOnChange(event)} className="form-control" id="inputEmail4" />
+                                <label htmlFor="inputQuantity">Số lượng</label>
+                                <input
+                                    type="number"
+                                    value={inputValues.quantity}
+                                    name="quantity"
+                                    onChange={handleOnChange}
+                                    className="form-control"
+                                    id="inputQuantity"
+                                />
+                            </div>
+                            <div className="form-group col-md-6">
+                                <label htmlFor="inputPrice">Đơn giá</label>
+                                <input
+                                    type="number"
+                                    value={inputValues.price}
+                                    name="price"
+                                    onChange={handleOnChange}
+                                    className="form-control"
+                                    id="inputPrice"
+                                />
                             </div>
                         </div>
-                       
-                        <button type="button" onClick={() => handleSaveReceipt()} className="btn btn-primary">Lưu thông tin</button>
+                        <button
+                            type="button"
+                            onClick={handleSaveReceipt}
+                            className="btn btn-primary"
+                        >
+                            Lưu thông tin
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
+
 export default AddReceipt;

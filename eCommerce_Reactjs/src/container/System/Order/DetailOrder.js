@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Link, NavLink, useHistory, useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useCallback, useEffect, useState } from 'react';
+import { NavLink, useParams } from 'react-router-dom';
 import { getDetailOrder, updateStatusOrderService } from '../../../services/userService';
 import './../../Order/OrderHomePage.scss';
 import { toast } from 'react-toastify';
@@ -16,26 +15,28 @@ function DetailOrder(props) {
     const [isOpen, setisOpen] = useState(false)
     let price = 0;
     const [priceShip, setpriceShip] = useState(0)
+    const loadDataOrder = useCallback(async () => {
+        if (!id) {
+            return;
+        }
+        try {
+            const order = await getDetailOrder(id);
+            if (order && order.errCode === 0) {
+                setDataOrder(order.data);
+                if (order.data && order.data.typeShipData) {
+                    setpriceShip(order.data.typeShipData.price);
+                }
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }, [id]);
     useEffect(() => {
         loadDataOrder()
-    }, [])
+    }, [loadDataOrder])
     let openPreviewImage = (url) => {
         setimgPreview(url);
         setisOpen(true);
-    }
-    let loadDataOrder = () => {
-        if (id) {
-            let fetchOrder = async () => {
-                let order = await getDetailOrder(id)
-                if (order && order.errCode == 0) {
-                    setDataOrder(order.data)
-                    setpriceShip(order.data.typeShipData.price)
-                }
-            }
-            fetchOrder()
-
-
-        }
     }
     let totalPriceDiscount = (price, discount) => {
         try {
@@ -61,7 +62,7 @@ function DetailOrder(props) {
             id: DataOrder.id,
             statusId: 'S4'
         })
-        if (res && res.errCode == 0) {
+        if (res && res.errCode === 0) {
             toast.success("Xác nhận đơn hàng thành công")
             loadDataOrder()
         }
@@ -71,7 +72,7 @@ function DetailOrder(props) {
             id: DataOrder.id,
             statusId: 'S5'
         })
-        if (res && res.errCode == 0) {
+        if (res && res.errCode === 0) {
             toast.success("Xác nhận gửi hàng thành công")
             loadDataOrder()
         }
@@ -81,7 +82,7 @@ function DetailOrder(props) {
             id: DataOrder.id,
             statusId: 'S6'
         })
-        if (res && res.errCode == 0) {
+        if (res && res.errCode === 0) {
             toast.success("Đã giao hàng thành công")
             loadDataOrder()
         }
@@ -92,7 +93,7 @@ function DetailOrder(props) {
             statusId: 'S7',
             dataOrder: data
         })
-        if (res && res.errCode == 0) {
+        if (res && res.errCode === 0) {
             toast.success("Hủy đơn hàng thành công")
             loadDataOrder()
         }
@@ -106,7 +107,7 @@ function DetailOrder(props) {
             <div className="wrap-order">
                 <div className="wrap-heading-order">
                     <NavLink to="/" className="navbar-brand logo_h">
-                        <img src="/resources/img/logo.png" alt="" />
+                        <img src="/resources/img/logo.png" alt="Easier logo" />
                     </NavLink>
                     <span>Chi tiết đơn hàng</span>
                 </div>
@@ -197,7 +198,7 @@ function DetailOrder(props) {
                             <div className="box-shopcart-bottom">
                                 <div className="content-left">
                                     <div className="wrap-voucher">
-                                        <img width="20px" height="20px" style={{ marginLeft: "-3px" }} src={storeVoucherLogo}></img>
+                                        <img width="20px" height="20px" style={{ marginLeft: "-3px" }} src={storeVoucherLogo} alt="Voucher icon"></img>
                                         <span className="name-easier">Easier voucher</span>
 
 
@@ -233,7 +234,7 @@ function DetailOrder(props) {
                 <div className="wrap-payment">
                     <div className="content-top" style={{ display: 'flex', gap: '10px' }}>
                         <span>Phương Thức Thanh Toán</span>
-                        <div className='box-type-payment active'>{DataOrder.isPaymentOnlien == 0 ? 'Thanh toán tiền mặt' : 'Thanh toán onlien'}</div>
+                        <div className='box-type-payment active'>{DataOrder.isPaymentOnlien === 0 ? 'Thanh toán tiền mặt' : 'Thanh toán onlien'}</div>
 
                     </div>
                     <div className="content-top" style={{ display: 'flex', gap: '10px' }}>
@@ -287,23 +288,23 @@ function DetailOrder(props) {
                                 <div className="money">{DataOrder && DataOrder.voucherData && DataOrder.voucherId ? CommonUtils.formatter.format(totalPriceDiscount(price, DataOrder.voucherData) + priceShip) : CommonUtils.formatter.format(price + (+priceShip))}</div>
                             </div>
                             <div className="box-flex">
-                                {DataOrder && DataOrder.statusId == 'S3' &&
+                                {DataOrder && DataOrder.statusId === 'S3' &&
 
-                                    <a onClick={() => handleAcceptOrder()} className="main_btn">Xác nhận đơn</a>
+                                    <button type="button" onClick={handleAcceptOrder} className="main_btn">Xác nhận đơn</button>
 
 
 
                                 }
-                                {DataOrder && DataOrder.statusId == 'S4' &&
-                                    <a onClick={() => handleSendProduct()} className="main_btn">Gửi hàng</a>
+                                {DataOrder && DataOrder.statusId === 'S4' &&
+                                    <button type="button" onClick={handleSendProduct} className="main_btn">Gửi hàng</button>
                                 }
-                                {DataOrder && DataOrder.statusId == 'S5' &&
-                                    <a onClick={() => handleSuccessShip()} className="main_btn">Đã giao hàng</a>
+                                {DataOrder && DataOrder.statusId === 'S5' &&
+                                    <button type="button" onClick={handleSuccessShip} className="main_btn">Đã giao hàng</button>
                                 }
                             </div>
-                            {(DataOrder && DataOrder.statusId == 'S3' && DataOrder.isPaymentOnlien == 0)
+                            {(DataOrder && DataOrder.statusId === 'S3' && DataOrder.isPaymentOnlien === 0)
                                 &&
-                                <a onClick={() => handleCancelOrder(DataOrder)} style={{ marginLeft: '30px', background: '#cd2b14', border: '1px solid #cd2b14', width: '213px' }} className="main_btn">Hủy đơn</a>
+                                <button type="button" onClick={() => handleCancelOrder(DataOrder)} style={{ marginLeft: '30px', background: '#cd2b14', border: '1px solid #cd2b14', width: '213px' }} className="main_btn">Hủy đơn</button>
                             }
 
 

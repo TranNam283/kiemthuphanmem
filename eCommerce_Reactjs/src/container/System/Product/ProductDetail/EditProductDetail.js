@@ -1,9 +1,8 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
-import CommonUtils from '../../../../utils/CommonUtils';
 import '../AddProduct.scss';
 import { getProductDetailByIdService, UpdateProductDetailService } from '../../../../services/userService';
 const EditProductDetail = (props) => {
@@ -15,29 +14,29 @@ const EditProductDetail = (props) => {
     });
     const { id } = useParams()
 
-    useEffect(() => {
-        let fetchProductDetail = async () => {
-            let res = await getProductDetailByIdService(id)
-            if (res && res.errCode === 0) {
-                setStateProductdetail(res.data)
-            }
-        }
-        fetchProductDetail();
-    }, [])
-    let setStateProductdetail = (data) => {
-        setInputValues({
-            ...inputValues,
-            ["originalPrice"]: data.originalPrice,
-            ["stock"]: data.stock,
-            ["discountPrice"]: data.discountPrice,
-            ["nameDetail"]: data.nameDetail,
-            ["description"]: data.description,
-        })
+    const setStateProductdetail = useCallback((data) => {
+        setInputValues(prev => ({
+            ...prev,
+            originalPrice: data.originalPrice,
+            stock: data.stock,
+            discountPrice: data.discountPrice,
+            nameDetail: data.nameDetail,
+            description: data.description,
+        }))
 
-    }
+    }, [])
+    const fetchProductDetail = useCallback(async () => {
+        const res = await getProductDetailByIdService(id)
+        if (res && res.errCode === 0) {
+            setStateProductdetail(res.data)
+        }
+    }, [id, setStateProductdetail])
+    useEffect(() => {
+        fetchProductDetail();
+    }, [fetchProductDetail])
     const handleOnChange = event => {
         const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
+        setInputValues(prev => ({ ...prev, [name]: value }));
 
     };
 

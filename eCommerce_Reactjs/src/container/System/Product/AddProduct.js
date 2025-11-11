@@ -1,12 +1,8 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 import { useFetchAllcode } from '../../customize/fetch';
 import CommonUtils from '../../../utils/CommonUtils';
-import localization from 'moment/locale/vi';
-import moment from 'moment';
 import './AddProduct.scss';
 import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
@@ -26,10 +22,28 @@ const AddProduct = (props) => {
         image: '', imageReview: '', isOpen: false, nameDetail: '', contentHTML: '', contentMarkdown: '', weight: ''
     });
 
-    if (dataBrand && dataBrand.length > 0 && inputValues.brandId === '' && dataCategory && dataCategory.length > 0 && inputValues.categoryId === '' && dataSize && dataSize.length > 0 && inputValues.sizeId === '') {
-
-        setInputValues({ ...inputValues, ["brandId"]: dataBrand[0].code, ["categoryId"]: dataCategory[0].code, ["sizeId"]: dataSize[0].code })
-    }
+    useEffect(() => {
+        if (!dataBrand && !dataCategory && !dataSize) {
+            return;
+        }
+        setInputValues((prevState) => {
+            let updated = false;
+            const nextState = { ...prevState };
+            if (!prevState.brandId && dataBrand && dataBrand.length > 0) {
+                nextState.brandId = dataBrand[0].code;
+                updated = true;
+            }
+            if (!prevState.categoryId && dataCategory && dataCategory.length > 0) {
+                nextState.categoryId = dataCategory[0].code;
+                updated = true;
+            }
+            if (!prevState.sizeId && dataSize && dataSize.length > 0) {
+                nextState.sizeId = dataSize[0].code;
+                updated = true;
+            }
+            return updated ? nextState : prevState;
+        });
+    }, [dataBrand, dataCategory, dataSize])
     const handleOnChange = event => {
         const { name, value } = event.target;
         setInputValues({ ...inputValues, [name]: value });
@@ -46,14 +60,14 @@ const AddProduct = (props) => {
         
             let base64 = await CommonUtils.getBase64(file);
             let objectUrl = URL.createObjectURL(file)
-            setInputValues({ ...inputValues, ["image"]: base64, ["imageReview"]: objectUrl })
+            setInputValues((prevState) => ({ ...prevState, image: base64, imageReview: objectUrl }))
 
         }
     }
     let openPreviewImage = () => {
         if (!inputValues.imageReview) return;
 
-        setInputValues({ ...inputValues, ["isOpen"]: true })
+        setInputValues((prevState) => ({ ...prevState, isOpen: true }))
     }
     let handleSaveProduct = async () => {
         console.log(inputValues.sizeId)
@@ -78,27 +92,26 @@ const AddProduct = (props) => {
         })
         if (res && res.errCode === 0) {
             toast.success("Tạo mới sản phẩm thành công!")
-            setInputValues({
-                ...inputValues,
-                ["name"]: '',
-                ["shortdescription"]: '',
-                ["categoryId"]: '',
-                ["madeby"]: '',
-                ["material"]: '',
-                ["brandId"]: '',
-                ["height"]: '',
-                ["width"]: '',
-                ["sizeId"]: '',
-             
-                ["originalPrice"]: '',
-                ["discountPrice"]: '',
-                ["image"]: '',
-                ["imageReview"]: '',
-                ["nameDetail"]: '',
-                ["contentHTML"]: '',
-                ["contenMarkdown"]: '',
-                ["weight"]: ''
-            })
+            setInputValues((prevState) => ({
+                ...prevState,
+                name: '',
+                shortdescription: '',
+                categoryId: '',
+                madeby: '',
+                material: '',
+                brandId: '',
+                height: '',
+                width: '',
+                sizeId: '',
+                originalPrice: '',
+                discountPrice: '',
+                image: '',
+                imageReview: '',
+                nameDetail: '',
+                contentHTML: '',
+                contentMarkdown: '',
+                weight: ''
+            }))
         } else {
             toast.error(res.errMessage)
         }
@@ -106,8 +119,8 @@ const AddProduct = (props) => {
     let handleEditorChange = ({ html, text }) => {
         setInputValues({
             ...inputValues,
-            ["contentMarkdown"]: text,
-            ["contentHTML"]: html
+            contentMarkdown: text,
+            contentHTML: html
         })
     }
     return (
@@ -238,7 +251,7 @@ const AddProduct = (props) => {
             </div>
             {inputValues.isOpen === true &&
                 <Lightbox mainSrc={inputValues.imageReview}
-                    onCloseRequest={() => setInputValues({ ...inputValues, ["isOpen"]: false })}
+                    onCloseRequest={() => setInputValues((prevState) => ({ ...prevState, isOpen: false }))}
                 />
             }
         </div>

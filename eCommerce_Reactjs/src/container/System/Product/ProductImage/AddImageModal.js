@@ -1,19 +1,10 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import CommonUtils from '../../../../utils/CommonUtils';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
-import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from 'reactstrap';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    useParams
-} from "react-router-dom";
+import { Modal, ModalFooter, ModalBody, Button } from 'reactstrap';
 import { getProductDetailImageByIdService } from '../../../../services/userService';
 
 
@@ -24,30 +15,32 @@ const AddImageModal = (props) => {
     });
 
     useEffect(() => {
-        let id = props.productImageId
-        console.log("check id", id)
-        if (id) {
-            let fetchProductImage = async () => {
-                let res = await getProductDetailImageByIdService(id)
+        const id = props.productImageId
+        if (props.isOpenModal && id) {
+            const fetchProductImage = async () => {
+                const res = await getProductDetailImageByIdService(id)
                 if (res && res.errCode === 0) {
-                    setInputValues({
-                        ...inputValues, ["isActionUpdate"]: true, ["caption"]: res.data.caption, ["image"]: res.data.image,
-                        ["imageReview"]: res.data.image
-                    })
+                    setInputValues(prev => ({
+                        ...prev,
+                        isActionUpdate: true,
+                        caption: res.data.caption,
+                        image: res.data.image,
+                        imageReview: res.data.image
+                    }))
 
                 }
             }
             fetchProductImage();
-
-
+        } else if (!props.isOpenModal) {
+            setInputValues(prev => ({ ...prev, isActionUpdate: false }))
         }
-    }, [props.isOpenModal])
+    }, [props.isOpenModal, props.productImageId])
 
 
 
     const handleOnChange = event => {
         const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
+    setInputValues(prev => ({ ...prev, [name]: value }));
 
     };
 
@@ -60,14 +53,14 @@ const AddImageModal = (props) => {
         else{
             let base64 = await CommonUtils.getBase64(file);
             let objectUrl = URL.createObjectURL(file)
-            setInputValues({ ...inputValues, ["image"]: base64, ["imageReview"]: objectUrl })
+            setInputValues(prev => ({ ...prev, image: base64, imageReview: objectUrl }))
 
         }
     }
     let openPreviewImage = () => {
         if (!inputValues.imageReview) return;
 
-        setInputValues({ ...inputValues, ["isOpen"]: true })
+        setInputValues(prev => ({ ...prev, isOpen: true }))
     }
     let HandleSendDataFromModal = () => {
         props.sendDataFromModal({
@@ -76,12 +69,12 @@ const AddImageModal = (props) => {
             isActionUpdate: inputValues.isActionUpdate,
             id: props.productImageId
         })
-        setInputValues({ ...inputValues, ["image"]: '', ["imageReview"]: '', ["caption"]: '', ["isActionUpdate"]: false })
+        setInputValues(prev => ({ ...prev, image: '', imageReview: '', caption: '', isActionUpdate: false }))
 
     }
     let handleCloseModal = () => {
         props.closeModal()
-        setInputValues({ ...inputValues, ["image"]: '', ["imageReview"]: '', ["caption"]: '', ["isActionUpdate"]: false })
+        setInputValues(prev => ({ ...prev, image: '', imageReview: '', caption: '', isActionUpdate: false }))
     }
     return (
         <div className="">
@@ -124,7 +117,7 @@ const AddImageModal = (props) => {
             </Modal>
             {inputValues.isOpen === true &&
                 <Lightbox mainSrc={inputValues.imageReview}
-                    onCloseRequest={() => setInputValues({ ...inputValues, ["isOpen"]: false })}
+                    onCloseRequest={() => setInputValues(prev => ({ ...prev, isOpen: false }))}
                 />
             }
         </div >

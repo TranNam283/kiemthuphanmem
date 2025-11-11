@@ -1,46 +1,34 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getAllProductDetailByIdService, DeleteProductDetailService } from '../../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import CommonUtils from '../../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    useParams
-} from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 const ManageProductDetail = () => {
 
     const { id } = useParams()
     const [dataProductDetail, setdataProductDetail] = useState([])
-    const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
-    useEffect(() => {
-
-        let fetchProductDetail = async () => {
-            await loadProductDetail()
-        }
-        fetchProductDetail()
-    }, [])
-    let loadProductDetail = async () => {
-        let arrData = await getAllProductDetailByIdService({
+    const [count, setCount] = useState(0)
+    const [numberPage, setnumberPage] = useState(0)
+    const loadProductDetail = useCallback(async ({ page = 0 } = {}) => {
+        const arrData = await getAllProductDetailByIdService({
 
             id: id,
             limit: PAGINATION.pagerow,
-            offset: 0
+            offset: page * PAGINATION.pagerow
 
         })
         if (arrData && arrData.errCode === 0) {
             setdataProductDetail(arrData.data)
             setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
         }
-    }
+    }, [id])
+    useEffect(() => {
+        loadProductDetail()
+    }, [loadProductDetail])
     let handleDeleteProductDetail = async (productdetailId) => {
         let response = await DeleteProductDetailService({
             data: {
@@ -49,18 +37,7 @@ const ManageProductDetail = () => {
         })
         if (response && response.errCode === 0) {
             toast.success("Xóa chi tiết sản phẩm thành công !")
-
-            let arrData = await getAllProductDetailByIdService({
-
-                id: id,
-                limit: PAGINATION.pagerow,
-                offset: numberPage * PAGINATION.pagerow
-
-            })
-            if (arrData && arrData.errCode === 0) {
-                setdataProductDetail(arrData.data)
-                setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
-            }
+            await loadProductDetail({ page: numberPage })
 
         } else {
             toast.error("Xóa sản phẩm thất bại")
@@ -68,17 +45,7 @@ const ManageProductDetail = () => {
     }
     let handleChangePage = async (number) => {
         setnumberPage(number.selected)
-        let arrData = await getAllProductDetailByIdService({
-
-            id: id,
-            limit: PAGINATION.pagerow,
-            offset: number.selected * PAGINATION.pagerow
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataProductDetail(arrData.data)
-
-        }
+        await loadProductDetail({ page: number.selected })
     }
     return (
         <div className="container-fluid px-4">

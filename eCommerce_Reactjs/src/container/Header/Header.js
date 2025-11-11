@@ -1,6 +1,6 @@
 import React from 'react';
-import { useEffect, useState,useRef } from 'react';
-import { Link, NavLink, useHistory } from 'react-router-dom';
+import { useCallback, useEffect, useState,useRef } from 'react';
+import { Link, NavLink } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getItemCartStart } from '../../action/ShopCartAction'
 import {listRoomOfUser} from '../../services/userService';
@@ -15,49 +15,10 @@ const Header = props => {
     let dataCart = useSelector(state => state.shopcart.listCartItem)
     const host = process.env.REACT_APP_BACKEND_URL;
     const socketRef = useRef();
-    const [id, setId] = useState();
 
-
-
-    useEffect(() => {
-        socketRef.current = socketIOClient.connect(host)
-        const userData = JSON.parse(localStorage.getItem('userData'));
-        setUser(userData)
-        if (userData) {
-            dispatch(getItemCartStart(userData.id))
-            socketRef.current.on('getId', data => {
-                setId(data)
-              }) // phần này đơn giản để gán id cho mỗi phiên kết nối vào page. Mục đích chính là để phân biệt đoạn nào là của mình đang chat.
-            fetchListRoom(userData.id)
-    
-            socketRef.current.on('sendDataServer', dataGot => {
-               
-                fetchListRoom(userData.id)
-    
-                })  
-             socketRef.current.on('loadRoomServer', dataGot => {
-                    
-                    fetchListRoom(userData.id)
-        
-                    })  
-              return () => {
-                socketRef.current.disconnect();
-              };
-        }
-       
-    }, [])
-    let scrollHeader = () => {
-        window.addEventListener("scroll", function () {
-            var header = document.querySelector(".main_menu");
-            if (header) {
-                header.classList.toggle("sticky", window.scrollY > 0)
-            }
-        })
-    }
-    let fetchListRoom = async(userId) =>{
-        let res = await listRoomOfUser(userId)
-        if(res && res.errCode ==0 ){
-          
+    const fetchListRoom = useCallback(async(userId) =>{
+        const res = await listRoomOfUser(userId)
+        if(res && res.errCode === 0 ){
             let count = 0;
             if(res.data && res.data.length> 0 && res.data[0].messageData && res.data[0].messageData.length > 0){
                 res.data[0].messageData.forEach((item) =>{
@@ -68,8 +29,45 @@ const Header = props => {
             setquantityMessage(count)
         }
        
-      }
-    scrollHeader()
+      },[])
+
+    useEffect(() => {
+        socketRef.current = socketIOClient.connect(host)
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        setUser(userData)
+        if (userData) {
+            dispatch(getItemCartStart(userData.id))
+            fetchListRoom(userData.id)
+    
+            socketRef.current.on('sendDataServer', () => {
+               
+                fetchListRoom(userData.id)
+    
+                })  
+             socketRef.current.on('loadRoomServer', () => {
+                    
+                    fetchListRoom(userData.id)
+        
+                    })  
+              return () => {
+                socketRef.current.disconnect();
+              };
+        }
+       
+    }, [dispatch, fetchListRoom, host])
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const header = document.querySelector(".main_menu");
+            if (header) {
+                header.classList.toggle("sticky", window.scrollY > 0)
+            }
+        }
+        window.addEventListener("scroll", handleScroll)
+        return () => {
+            window.removeEventListener("scroll", handleScroll)
+        }
+    }, [])
 
     return (
 

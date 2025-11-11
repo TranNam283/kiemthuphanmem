@@ -1,10 +1,7 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
-import { Link, NavLink, useHistory } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import './Header.scss';
 const TopMenu = props => {
-    let history = useHistory();
-
     let handleLogout = () => {
         localStorage.removeItem("userData");
         localStorage.removeItem("token");
@@ -52,7 +49,7 @@ const TopMenu = props => {
                                     }
                                 </li>
                                 <li>
-                                    <a>VI</a>
+                                    <a href="/" onClick={(event) => event.preventDefault()}>VI</a>
                                 </li>
 
                             </ul>

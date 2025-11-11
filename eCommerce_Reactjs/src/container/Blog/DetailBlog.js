@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import CommentBlog from '../../component/Blog/CommentBlog';
 import CommentFormBlog from '../../component/Blog/CommentFormBlog';
 import RightBlog from '../../component/Blog/RightBlog';
@@ -16,6 +16,31 @@ function DetailBlog(props) {
   const { id } = useParams();
   const [user, setUser] = useState({})
   const [dataFeatureBlog, setdataFeatureBlog] = useState([])
+  const loadComment = useCallback(async (blogId) => {
+    const res = await getAllcommentByBlogIdService(blogId)
+    if (res && res.errCode === 0) {
+
+      setdataComment(res.data)
+    }
+  }, [])
+  const loadFeatureBlog = useCallback(async () => {
+    const res = await getFeatureBlog(6)
+    if (res && res.errCode === 0) {
+      setdataFeatureBlog(res.data)
+    }
+  }, [])
+  const loadCategoryBlog = useCallback(async () => {
+    const res = await getAllCategoryBlogService('SUBJECT')
+    if (res && res.errCode === 0) {
+      setdataSubject(res.data)
+    }
+  }, [])
+  const loadDataBlog = useCallback(async (blogId) => {
+    const res = await getDetailBlogByIdService(blogId)
+    if (res && res.errCode === 0) {
+      setdataBlog(res.data)
+    }
+  }, [])
   useEffect(() => {
     try {
       window.scrollTo(0, 0);
@@ -34,32 +59,7 @@ function DetailBlog(props) {
       console.log(error)
     }
 
-  }, [id])
-  let loadComment = async (id) => {
-    let res = await getAllcommentByBlogIdService(id)
-    if (res && res.errCode === 0) {
-
-      setdataComment(res.data)
-    }
-  }
-  let loadFeatureBlog = async () => {
-    let res = await getFeatureBlog(6)
-    if (res && res.errCode == 0) {
-      setdataFeatureBlog(res.data)
-    }
-  }
-  let loadCategoryBlog = async () => {
-    let res = await getAllCategoryBlogService('SUBJECT')
-    if (res && res.errCode == 0) {
-      setdataSubject(res.data)
-    }
-  }
-  let loadDataBlog = async (id) => {
-    let res = await getDetailBlogByIdService(id)
-    if (res && res.errCode == 0) {
-      setdataBlog(res.data)
-    }
-  }
+  }, [id, loadCategoryBlog, loadComment, loadDataBlog, loadFeatureBlog])
   let handleAddComment = async (content) => {
     if (user && user.id) {
       let res = await createNewcommentService({
@@ -67,7 +67,7 @@ function DetailBlog(props) {
         blogId: id,
         userId: user.id,
       })
-      if (res && res.errCode == 0) {
+      if (res && res.errCode === 0) {
         toast.success('Đăng bình luận thành công')
         loadComment(id)
       } else {
@@ -106,8 +106,8 @@ function DetailBlog(props) {
                 <div className="blog_details">
                   <h2>{dataBlog.title}</h2>
                   <ul className="blog-info-link mt-3 mb-4">
-                    <li><a href="#"><i className="ti-user" /> {dataBlog.userData && dataBlog.userData.firstName + " " + dataBlog.userData.lastName}</a></li>
-                    <li><a href="#"><i className="ti-comments" /> {dataComment.length} Bình luận</a></li>
+                    <li><a href="/" onClick={(event) => event.preventDefault()}><i className="ti-user" /> {dataBlog.userData && dataBlog.userData.firstName + " " + dataBlog.userData.lastName}</a></li>
+                    <li><a href="/" onClick={(event) => event.preventDefault()}><i className="ti-comments" /> {dataComment.length} Bình luận</a></li>
                   </ul>
                   <div className="quote-wrapper">
                     <div className="quotes">
@@ -133,6 +133,8 @@ function DetailBlog(props) {
                         />
                       )
                     }
+
+                    return null
 
                   })
                 }

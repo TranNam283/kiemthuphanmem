@@ -1,67 +1,44 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { getAllOrder } from '../../../services/userService';
 import moment from 'moment';
-import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import { useFetchAllcode } from '../../customize/fetch';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from 'react-router-dom';
 const ManageOrder = () => {
 
     const [dataOrder, setdataOrder] = useState([])
-    const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
+    const [count, setCount] = useState(0)
     const { data: dataStatusOrder } = useFetchAllcode('STATUS-ORDER');
     const [StatusId, setStatusId] = useState('ALL')
-    useEffect(() => {
-        loadOrderData('ALL')
-
-    }, [])
-    let loadOrderData = (statusId) => {
+    const fetchOrders = useCallback(async (statusId, page = 0) => {
         try {
-            let fetchData = async () => {
-                let arrData = await getAllOrder({
-
-                    limit: PAGINATION.pagerow,
-                    offset: 0,
-                    statusId: statusId
-
-                })
-                if (arrData && arrData.errCode === 0) {
-                    setdataOrder(arrData.data)
-                    setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
-                }
+            const arrData = await getAllOrder({
+                limit: PAGINATION.pagerow,
+                offset: page * PAGINATION.pagerow,
+                statusId
+            })
+            if (arrData && arrData.errCode === 0) {
+                setdataOrder(arrData.data)
+                setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
             }
-            fetchData();
         } catch (error) {
             console.log(error)
         }
-    }
-    let handleOnchangeStatus = (event) => {
+    }, [])
+    useEffect(() => {
+        fetchOrders('ALL')
 
-        loadOrderData(event.target.value)
-        setStatusId(event.target.value)
+    }, [fetchOrders])
+    let handleOnchangeStatus = (event) => {
+        const statusValue = event.target.value
+        setStatusId(statusValue)
+        fetchOrders(statusValue)
 
     }
     let handleChangePage = async (number) => {
-        setnumberPage(number.selected)
-        let arrData = await getAllOrder({
-            limit: PAGINATION.pagerow,
-            offset: number.selected * PAGINATION.pagerow,
-            statusId: StatusId
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataOrder(arrData.data)
-
-        }
+        fetchOrders(StatusId, number.selected)
     }
     let handleOnClickExport = async () => {
         let res = await getAllOrder({
@@ -85,13 +62,13 @@ const ManageOrder = () => {
                     <i className="fas fa-table me-1" />
                     Danh sách đơn đặt hàng
                 </div>
-                <select onChange={(event) => handleOnchangeStatus(event)} className="form-select col-3 ml-3 mt-3">
-                    <option value={'ALL'} selected>Trạng thái đơn hàng</option>
+                <select value={StatusId} onChange={(event) => handleOnchangeStatus(event)} className="form-select col-3 ml-3 mt-3">
+                    <option value={'ALL'}>Trạng thái đơn hàng</option>
                     {
                         dataStatusOrder && dataStatusOrder.length > 0 &&
                         dataStatusOrder.map((item, index) => {
                             return (
-                                <option value={item.code}>{item.value}</option>
+                                <option key={item.code} value={item.code}>{item.value}</option>
                             )
                         })
                     }
@@ -123,7 +100,6 @@ const ManageOrder = () => {
                             <tbody>
                                 {dataOrder && dataOrder.length > 0 &&
                                     dataOrder.map((item, index) => {
-                                        let date = moment.unix(item.orderdate / 1000).format('DD/MM/YYYY')
                                         return (
                                             <tr key={index}>
                                                 <td>{item.id}</td>
@@ -132,7 +108,7 @@ const ManageOrder = () => {
                                                 <td>{moment.utc(item.createdAt).local().format('DD/MM/YYYY HH:mm:ss')}</td>
                                                 <td>{item.typeShipData.type}</td>
                                                 <td>{item.voucherData.codeVoucher}</td>
-                                                <td>{item.isPaymentOnlien == 0 ? 'Thanh toán tiền mặt' : 'Thanh toán online'}</td>
+                                                <td>{item.isPaymentOnlien === 0 ? 'Thanh toán tiền mặt' : 'Thanh toán online'}</td>
                                                 <td>{item.statusOrderData.value}</td>
                                                 <td>{item.shipperData && item.shipperData.firstName + " " + item.shipperData.lastName + " - " + item.shipperData.phonenumber}</td>
                                                 <td>

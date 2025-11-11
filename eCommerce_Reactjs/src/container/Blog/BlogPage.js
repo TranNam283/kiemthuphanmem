@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ItemBlog from '../../component/Blog/ItemBlog';
-import Pagination from '../../component/Shop/Pagination';
-import SpecialItemBlog from '../../component/Blog/SpecialItemBlog';
 import RightBlog from '../../component/Blog/RightBlog';
 import { PAGINATION } from '../../utils/constant'
 import { getAllBlog } from '../../services/userService'
 import ReactPaginate from 'react-paginate';
-import { useFetchAllcode } from '../customize/fetch';
 import {getAllCategoryBlogService,getFeatureBlog} from '../../services/userService'
 import { Link } from 'react-router-dom';
 function BlogPage(props) {
@@ -14,77 +11,60 @@ function BlogPage(props) {
   const [dataFeatureBlog, setdataFeatureBlog] = useState([])
   const [dataSubject, setdataSubject] = useState([])
   const [count, setCount] = useState('')
-  const [numberPage, setnumberPage] = useState('')
   const [subjectId,setsubjectId] = useState('')
   const [keyword, setkeyword] = useState('')
+  const fetchData = useCallback(async ({ subject = '', search = '', page = 0 } = {}) => {
+    const arrData = await getAllBlog({
+      subjectId: subject,
+      limit: PAGINATION.pagerow,
+      offset: page * PAGINATION.pagerow,
+      keyword: search
+    })
+    if (arrData && arrData.errCode === 0) {
+      setdataBlog(arrData.data)
+      setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
+    }
+  }, [])
+  const loadFeatureBlog = useCallback(async () =>{
+    const res = await getFeatureBlog(6)
+    if(res && res.errCode === 0){
+      setdataFeatureBlog(res.data)
+    }
+  },[])
+  const loadCategoryBlog = useCallback( async() =>{
+    const res = await getAllCategoryBlogService('SUBJECT')
+    if(res && res.errCode === 0){
+        setdataSubject(res.data)
+    }
+  },[])
   useEffect(() => {
     try {
       window.scrollTo(0, 0);
       loadCategoryBlog()
-        fetchData('',keyword)
-        loadFeatureBlog()
+      fetchData()
+      loadFeatureBlog()
     } catch (error) {
         console.log(error)
     }
 
-}, [])
+}, [fetchData, loadCategoryBlog, loadFeatureBlog])
 
-
-
-let fetchData = async (code,keyword) => {
-  let arrData = await getAllBlog({
-
-      subjectId:code,
-      limit: PAGINATION.pagerow,
-      offset: 0,
-      keyword:keyword
-  })
-  if (arrData && arrData.errCode === 0) {
-      setdataBlog(arrData.data)
-      setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
-  }
-}
-let loadFeatureBlog = async() =>{
-  let res = await getFeatureBlog(6)
-  if(res && res.errCode ==0){
-    setdataFeatureBlog(res.data)
-  }
-}
-let loadCategoryBlog = async() =>{
-  let res = await getAllCategoryBlogService('SUBJECT')
-  if(res && res.errCode == 0){
-      setdataSubject(res.data)
-  }
-}
 let handleChangePage = async (number) => {
-  setnumberPage(number.selected)
-  let arrData = await getAllBlog({
-
-    subjectId:subjectId,
-      limit: PAGINATION.pagerow,
-      offset: number.selected * PAGINATION.pagerow,
-      keyword:keyword
-
-  })
-  if (arrData && arrData.errCode === 0) {
-      setdataBlog(arrData.data)
-     
-  }
-  
+  await fetchData({ subject: subjectId, search: keyword, page: number.selected })
 }
 let handleClickCategory = (code) =>{
   setsubjectId(code)
-  fetchData(code,'')
+  fetchData({ subject: code, search: '' })
 
 }
 let handleSearchBlog = (text) =>{
-  fetchData('',text)
+  fetchData({ subject: '', search: text })
   setkeyword(text)
 }
-let handleOnchangeSearch = (keyword) =>{
-  if(keyword === ''){
-    fetchData('',keyword)
-      setkeyword(keyword)
+let handleOnchangeSearch = (value) =>{
+  if(value === ''){
+    fetchData({ subject: '', search: '' })
+      setkeyword('')
    }
   
 }

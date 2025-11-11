@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 function ItemBlog(props) {
+    const createdAt = props.data && props.data.createdAt ? moment(props.data.createdAt) : null;
     return (
         <article className="blog_item">
             <div className="blog_item_img">
@@ -13,8 +14,8 @@ function ItemBlog(props) {
                     alt=""
                 />
                 <div className="blog_item_date" role="presentation">
-                    <h3>{moment(props.createdAt).format("DD")}</h3>
-                    <p>{moment(props.createdAt).format("MMM")}</p>
+                    <h3>{createdAt ? createdAt.format("DD") : ''}</h3>
+                    <p>{createdAt ? createdAt.format("MMM") : ''}</p>
                 </div>
             </div>
 

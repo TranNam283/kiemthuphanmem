@@ -1,109 +1,87 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useFetchAllcode } from '../../customize/fetch';
+import React, { useCallback, useEffect, useState } from 'react';
 import { DeleteAllcodeService, getListAllCodeService } from '../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import FormSearch from '../../../component/Search/FormSearch';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 const ManageBrand = () => {
-    const [keyword, setkeyword] = useState('')
-    const [dataBrand, setdataBrand] = useState([])
-    const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
+    const [keyword, setKeyword] = useState('');
+    const [dataBrand, setDataBrand] = useState([]);
+    const [count, setCount] = useState(0);
+    const [numberPage, setNumberPage] = useState(0);
+
+    const fetchData = useCallback(async (searchKeyword, offset = 0) => {
+        const response = await getListAllCodeService({
+            type: 'BRAND',
+            limit: PAGINATION.pagerow,
+            offset,
+            keyword: searchKeyword,
+        });
+        if (response && response.errCode === 0) {
+            setDataBrand(response.data);
+            setCount(Math.ceil(response.count / PAGINATION.pagerow));
+        }
+    }, []);
+
     useEffect(() => {
-        try {
-           
-            fetchData(keyword);
-        } catch (error) {
-            console.log(error)
-        }
-
-    }, [])
-    let fetchData = async (keyword) => {
-        let arrData = await getListAllCodeService({
-
-            type: 'BRAND',
-            limit: PAGINATION.pagerow,
-            offset: 0,
-            keyword:keyword
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataBrand(arrData.data)
-            setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
-        }
-    }
-    let handleDeleteBrand = async (event, id) => {
-        event.preventDefault();
-        let res = await DeleteAllcodeService(id)
-        if (res && res.errCode === 0) {
-            toast.success("Xóa nhãn hàng thành công")
-            let arrData = await getListAllCodeService({
-
-                type: 'BRAND',
-                limit: PAGINATION.pagerow,
-                offset: numberPage * PAGINATION.pagerow,
-                keyword:keyword
-            })
-            if (arrData && arrData.errCode === 0) {
-                setdataBrand(arrData.data)
-                setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
+        const loadInitial = async () => {
+            try {
+                await fetchData('');
+            } catch (error) {
+                console.log(error);
             }
+        };
+        loadInitial();
+    }, [fetchData]);
 
-        } else toast.error("Xóa nhãn hàng thất bại")
-    }
-    let handleChangePage = async (number) => {
-        setnumberPage(number.selected)
-        let arrData = await getListAllCodeService({
-
-            type: 'BRAND',
-            limit: PAGINATION.pagerow,
-            offset: number.selected * PAGINATION.pagerow,
-            keyword:keyword
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataBrand(arrData.data)
-
+    const handleDeleteBrand = async (id) => {
+        const res = await DeleteAllcodeService(id);
+        if (res && res.errCode === 0) {
+            toast.success('Xóa nhãn hàng thành công');
+            await fetchData(keyword, numberPage * PAGINATION.pagerow);
+        } else {
+            toast.error('Xóa nhãn hàng thất bại');
         }
-    }
-    let handleSearchBrand = (keyword) =>{
-        fetchData(keyword)
-        setkeyword(keyword)
-    }
-    let handleOnchangeSearch = (keyword) =>{
-        if(keyword === ''){
-            fetchData(keyword)
-            setkeyword(keyword)
+    };
+
+    const handleChangePage = async (page) => {
+        const selectedPage = page.selected;
+        setNumberPage(selectedPage);
+        await fetchData(keyword, selectedPage * PAGINATION.pagerow);
+    };
+
+    const handleSearchBrand = (searchKeyword) => {
+        setKeyword(searchKeyword);
+        setNumberPage(0);
+        fetchData(searchKeyword);
+    };
+
+    const handleOnchangeSearch = (searchKeyword) => {
+        if (searchKeyword === '') {
+            setKeyword(searchKeyword);
+            setNumberPage(0);
+            fetchData(searchKeyword);
         }
-    }
-    let handleOnClickExport =async () =>{
-        let res = await getListAllCodeService({
+    };
+
+    const handleOnClickExport = async () => {
+        const res = await getListAllCodeService({
             type: 'BRAND',
             limit: '',
             offset: '',
-            keyword:''
-        })
-        if(res && res.errCode == 0){
-            await CommonUtils.exportExcel(res.data,"Danh sách nhãn hàng","ListBrand")
+            keyword: '',
+        });
+        if (res && res.errCode === 0) {
+            await CommonUtils.exportExcel(res.data, 'Danh sách nhãn hàng', 'ListBrand');
         }
-       
-    }
+    };
+
     return (
         <div className="container-fluid px-4">
             <h1 className="mt-4">Quản lý nhãn hàng</h1>
-
 
             <div className="card mb-4">
                 <div className="card-header">
@@ -111,17 +89,16 @@ const ManageBrand = () => {
                     Danh sách nhãn hàng sản phẩm
                 </div>
                 <div className="card-body">
-               
-                    <div className='row'>
-                    <div  className='col-4'>
-                    <FormSearch title={"tên nhãn hàng"}  handleOnchange={handleOnchangeSearch} handleSearch={handleSearchBrand} />
-                    </div>
-                    <div className='col-8'>
-                    <button  style={{float:'right'}} onClick={() => handleOnClickExport()} className="btn btn-success" >Xuất excel <i className="fa-solid fa-file-excel"></i></button>
-                    </div>
+                    <div className="row">
+                        <div className="col-4">
+                            <FormSearch title={"tên nhãn hàng"} handleOnchange={handleOnchangeSearch} handleSearch={handleSearchBrand} />
+                        </div>
+                        <div className="col-8">
+                            <button style={{ float: 'right' }} onClick={handleOnClickExport} className="btn btn-success">Xuất excel <i className="fa-solid fa-file-excel"></i></button>
+                        </div>
                     </div>
                     <div className="table-responsive">
-                        <table className="table table-bordered" style={{ border: '1' }} width="100%" cellspacing="0">
+                        <table className="table table-bordered" style={{ border: '1' }} width="100%" cellSpacing="0">
                             <thead>
                                 <tr>
                                     <th>STT</th>
@@ -142,14 +119,12 @@ const ManageBrand = () => {
                                                 <td>
                                                     <Link to={`/admin/edit-Brand/${item.id}`}>Edit</Link>
                                                     &nbsp; &nbsp;
-                                                    <a href="#" onClick={(event) => handleDeleteBrand(event, item.id)} >Delete</a>
+                                                    <button type="button" className="btn btn-link p-0" onClick={() => handleDeleteBrand(item.id)}>Delete</button>
                                                 </td>
                                             </tr>
                                         )
                                     })
                                 }
-
-
                             </tbody>
                         </table>
                     </div>
@@ -161,18 +136,19 @@ const ManageBrand = () => {
                 breakLabel={'...'}
                 pageCount={count}
                 marginPagesDisplayed={3}
-                containerClassName={"pagination justify-content-center"}
-                pageClassName={"page-item"}
-                pageLinkClassName={"page-link"}
-                previousLinkClassName={"page-link"}
-                nextClassName={"page-item"}
-                nextLinkClassName={"page-link"}
-                breakLinkClassName={"page-link"}
-                breakClassName={"page-item"}
-                activeClassName={"active"}
+                containerClassName={'pagination justify-content-center'}
+                pageClassName={'page-item'}
+                pageLinkClassName={'page-link'}
+                previousLinkClassName={'page-link'}
+                nextClassName={'page-item'}
+                nextLinkClassName={'page-link'}
+                breakLinkClassName={'page-link'}
+                breakClassName={'page-item'}
+                activeClassName={'active'}
                 onPageChange={handleChangePage}
             />
         </div>
-    )
-}
+    );
+};
+
 export default ManageBrand;

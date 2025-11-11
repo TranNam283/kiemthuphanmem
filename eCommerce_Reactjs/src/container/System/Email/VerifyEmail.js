@@ -1,7 +1,4 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import React, { useEffect, useState } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 import './VerifyEmail.scss';
 import { handleVerifyEmail } from '../../../services/userService';
@@ -10,25 +7,25 @@ const VerifyEmail = () => {
     const [status, setstatus] = useState(false)
 
     useEffect(() => {
-        let token = getParam("token");
-        let id = getParam("userId");
-        let fetchVerifyEmail = async () => {
-            let res = await handleVerifyEmail({
-                token: token,
-                id: id
-            })
-            console.log(res.errCode)
-            if (res.errCode === 0) {
-                setstatus(true)
+        const fetchVerifyEmail = async () => {
+            try {
+                const url = new URL(window.location.href);
+                const token = url.searchParams.get('token');
+                const id = url.searchParams.get('userId');
+                const res = await handleVerifyEmail({
+                    token: token,
+                    id: id
+                })
+                console.log(res.errCode)
+                if (res.errCode === 0) {
+                    setstatus(true)
+                }
+            } catch (error) {
+                console.log(error)
             }
         }
         fetchVerifyEmail()
-    })
-    let getParam = (param) => {
-        let url = new URL(window.location.href);
-        return url.searchParams.get(param);
-
-    }
+    }, [])
     console.log("check status", status)
     return (
         <div className="container-verify-email">

@@ -1,5 +1,4 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { createNewBannerService, getDetailBannerByIdService, updateBannerService } from '../../../services/userService';
 import CommonUtils from '../../../utils/CommonUtils';
 import Lightbox from 'react-image-lightbox';
@@ -8,7 +7,6 @@ import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 import './AddBanner.scss';
-import moment from 'moment';
 const AddBanner = (props) => {
 
     const { id } = useParams();
@@ -16,6 +14,18 @@ const AddBanner = (props) => {
     const [inputValues, setInputValues] = useState({
         name: '', description: '', image: '', isActionADD: true, imageReview: '', isOpen: false,
     });
+    const setStateBanner = useCallback((data) => {
+        setInputValues((prev) => ({
+            ...prev,
+            name: data.name,
+            description: data.description,
+            image: data.image,
+            imageReview: data.image,
+            isActionADD: false
+        }))
+
+    }, [])
+
     useEffect(() => {
         if (id) {
             let fetchBanner = async () => {
@@ -27,18 +37,7 @@ const AddBanner = (props) => {
             fetchBanner();
         }
 
-    }, [])
-    let setStateBanner = (data) => {
-        setInputValues({
-            ...inputValues,
-            ["name"]: data.name,
-            ["description"]: data.description,
-            ["image"]: data.image,
-            ["imageReview"]: data.image,
-            ["isActionADD"]: false
-        })
-
-    }
+    }, [id, setStateBanner])
     const handleOnChange = event => {
         const { name, value } = event.target;
         setInputValues({ ...inputValues, [name]: value });
@@ -54,14 +53,14 @@ const AddBanner = (props) => {
             let base64 = await CommonUtils.getBase64(file);
             let objectUrl = URL.createObjectURL(file)
             console.log(base64)
-            setInputValues({ ...inputValues, ["image"]: base64, ["imageReview"]: objectUrl })
+            setInputValues({ ...inputValues, image: base64, imageReview: objectUrl })
 
         }
     }
     let openPreviewImage = () => {
         if (!inputValues.imageReview) return;
 
-        setInputValues({ ...inputValues, ["isOpen"]: true })
+        setInputValues({ ...inputValues, isOpen: true })
     }
     let handleSaveBanner = async () => {
         if (inputValues.isActionADD === true) {
@@ -74,10 +73,10 @@ const AddBanner = (props) => {
                 toast.success("Tạo mới băng rôn thành công !")
                 setInputValues({
                     ...inputValues,
-                    ["name"]: '',
-                    ["image"]: '',
-                    ["description"]: '',
-                    ["imageReview"]: ''
+                    name: '',
+                    image: '',
+                    description: '',
+                    imageReview: ''
                 })
             } else {
                 toast.error(res.errMessage)
@@ -132,7 +131,7 @@ const AddBanner = (props) => {
             </div>
             {inputValues.isOpen === true &&
                 <Lightbox mainSrc={inputValues.imageReview}
-                    onCloseRequest={() => setInputValues({ ...inputValues, ["isOpen"]: false })}
+                    onCloseRequest={() => setInputValues({ ...inputValues, isOpen: false })}
                 />
             }
         </div>

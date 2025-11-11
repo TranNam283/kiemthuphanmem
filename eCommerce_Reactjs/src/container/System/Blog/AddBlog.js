@@ -1,5 +1,4 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createNewBlogrService, getDetailBlogByIdService, updateBlogService } from '../../../services/userService';
 import CommonUtils from '../../../utils/CommonUtils';
 import Lightbox from 'react-image-lightbox';
@@ -7,7 +6,6 @@ import 'react-image-lightbox/style.css';
 import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
-import moment from 'moment';
 import { useFetchAllcode } from '../../customize/fetch';
 import MarkdownIt from 'markdown-it';
 import MdEditor from 'react-markdown-editor-lite';
@@ -20,10 +18,34 @@ const AddBlog = (props) => {
         title: '', shortdescription: '', image: '', isActionADD: true, imageReview: '', isOpen: false, contentMarkdown: '',
         contentHTML: '', subjectId: ''
     });
-    if (dataSubject && dataSubject.length > 0 && inputValues.subjectId === '') {
+    useEffect(() => {
+        if (dataSubject && dataSubject.length > 0) {
+            setInputValues((prev) => {
+                if (prev.subjectId) {
+                    return prev;
+                }
+                return {
+                    ...prev,
+                    subjectId: dataSubject[0].code
+                };
+            });
+        }
+    }, [dataSubject]);
 
-        setInputValues({ ...inputValues, ["subjectId"]: dataSubject[0].code })
-    }
+    const setStateBlog = useCallback((data) => {
+        setInputValues((prev) => ({
+            ...prev,
+            title: data.title,
+            shortdescription: data.shortdescription,
+            image: data.image,
+            imageReview: data.image,
+            isActionADD: false,
+            contentMarkdown: data.contentMarkdown,
+            contentHTML: data.contentHTML,
+            subjectId: data.subjectId,
+        }));
+
+    }, []);
     useEffect(() => {
         if (id) {
             let fetchBlog = async () => {
@@ -35,21 +57,7 @@ const AddBlog = (props) => {
             fetchBlog();
         }
 
-    }, [])
-    let setStateBlog = (data) => {
-        setInputValues({
-            ...inputValues,
-            ["title"]: data.title,
-            ["shortdescription"]: data.shortdescription,
-            ["image"]: data.image,
-            ["imageReview"]: data.image,
-            ["isActionADD"]: false,
-            ["contentMarkdown"]: data.contentMarkdown,
-            ["contentHTML"]: data.contentHTML,
-            ["subjectId"]: data.subjectId,
-        })
-
-    }
+    }, [id, setStateBlog])
     const handleOnChange = event => {
         const { name, value } = event.target;
         setInputValues({ ...inputValues, [name]: value });
@@ -64,14 +72,14 @@ const AddBlog = (props) => {
         else{
             let base64 = await CommonUtils.getBase64(file);
             let objectUrl = URL.createObjectURL(file)
-            setInputValues({ ...inputValues, ["image"]: base64, ["imageReview"]: objectUrl })
+            setInputValues({ ...inputValues, image: base64, imageReview: objectUrl })
 
         }
     }
     let openPreviewImage = () => {
         if (!inputValues.imageReview) return;
 
-        setInputValues({ ...inputValues, ["isOpen"]: true })
+        setInputValues({ ...inputValues, isOpen: true })
     }
     let handleSaveBlog = async () => {
         if (inputValues.isActionADD === true) {
@@ -88,13 +96,13 @@ const AddBlog = (props) => {
                 toast.success("Tạo mới bài đăng thành công !")
                 setInputValues({
                     ...inputValues,
-                    ["shortdescription"]: '',
-                    ["title"]: '',
-                    ["subjectId"]: '',
-                    ["image"]: '',
-                    ["contentMarkdown"]: '',
-                    ["contentHTML"]: '',
-                    ["imageReview"]: ''
+                    shortdescription: '',
+                    title: '',
+                    subjectId: '',
+                    image: '',
+                    contentMarkdown: '',
+                    contentHTML: '',
+                    imageReview: ''
                 })
             } else toast.error("Tạo mới bài đăng thất bại")
         } else {
@@ -114,11 +122,11 @@ const AddBlog = (props) => {
         }
     }
     let handleEditorChange = ({ html, text }) => {
-        setInputValues({
-            ...inputValues,
-            ["contentMarkdown"]: text,
-            ["contentHTML"]: html
-        })
+        setInputValues((prev) => ({
+            ...prev,
+            contentMarkdown: text,
+            contentHTML: html
+        }))
     }
     return (
         <div className="container-fluid px-4">
@@ -177,7 +185,7 @@ const AddBlog = (props) => {
             </div>
             {inputValues.isOpen === true &&
                 <Lightbox mainSrc={inputValues.imageReview}
-                    onCloseRequest={() => setInputValues({ ...inputValues, ["isOpen"]: false })}
+                    onCloseRequest={() => setInputValues({ ...inputValues, isOpen: false })}
                 />
             }
         </div>

@@ -1,12 +1,10 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createAllCodeService, getDetailAllcodeById, UpdateAllcodeService } from '../../../services/userService';
 
 import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 
-import moment from 'moment';
 const AddCategory = (props) => {
 
 
@@ -22,20 +20,23 @@ const AddCategory = (props) => {
     useEffect(() => {
 
         if (id) {
-            let fetchDetailCategory = async () => {
+            const fetchDetailCategory = async () => {
                 setisActionADD(false)
-                let allcode = await getDetailAllcodeById(id)
+                const allcode = await getDetailAllcodeById(id)
                 if (allcode && allcode.errCode === 0) {
-                    setInputValues({ ...inputValues, ["value"]: allcode.data.value, ["code"]: allcode.data.code })
+                    setInputValues((prevState) => ({ ...prevState, value: allcode.data.value, code: allcode.data.code }))
                 }
             }
             fetchDetailCategory()
+        } else {
+            setisActionADD(true)
+            setInputValues({ value: '', code: '' })
         }
-    }, [])
+    }, [id])
 
     const handleOnChange = event => {
         const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
+        setInputValues((prevState) => ({ ...prevState, [name]: value }));
 
     };
     let handleSaveCategory = async () => {
@@ -48,9 +49,8 @@ const AddCategory = (props) => {
             if (res && res.errCode === 0) {
                 toast.success("Thêm danh mục thành công")
                 setInputValues({
-                    ...inputValues,
-                    ["value"]: '',
-                    ["code"]: ''
+                    value: '',
+                    code: ''
                 })
             }
             else if (res && res.errCode === 2) {

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Link, NavLink, useHistory, useParams,useLocation  } from 'react-router-dom';
+import React, { useEffect, useMemo } from 'react';
+import { NavLink, useLocation  } from 'react-router-dom';
 
 import {
     paymentOrderVnpaySuccessService,confirmOrderVnpay
@@ -7,13 +7,11 @@ import {
 import './OrderHomePage.scss';
 
 import { toast } from 'react-toastify';
-
-import CommonUtils from '../../utils/CommonUtils';
 function useQuery() {
     const { search } = useLocation();
-  
-    return React.useMemo(() => new URLSearchParams(search), [search]);
-  }
+
+    return useMemo(() => new URLSearchParams(search), [search]);
+}
 function VnpayPaymentSuccess(props) {
     let query = useQuery();
     useEffect(() => {
@@ -40,17 +38,17 @@ function VnpayPaymentSuccess(props) {
                
                 if(orderData){
                     let res = await confirmOrderVnpay(objectParam)
-                    if(res && res.errCode == 0){
+                    if(res && res.errCode === 0){
 
                     createNewOrder(orderData)
                 }
             }
         }
         confirm()
-    }, [])
+    }, [query])
     let createNewOrder = async (data) =>{
         let res = await paymentOrderVnpaySuccessService(data)
-        if(res && res.errCode ==0){
+        if(res && res.errCode ===0){
             toast.success("Thanh toán hóa đơn thành công")
             const userData = JSON.parse(localStorage.getItem('userData'));
             setTimeout(()=>{

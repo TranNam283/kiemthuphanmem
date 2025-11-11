@@ -202,7 +202,7 @@ let handleLogin = (data) => {
                     }
                 } else {
                     userData.errCode = 1;
-                    userData.errMessage = `Your's email isn't exist in your system. plz try other email`
+                    userData.errMessage = 'Tài khoản của bạn không tồn tại'
                 }
                 resolve(userData)
             }
@@ -463,7 +463,7 @@ let handleSendEmailForgotPassword = (email) => {
                 } else {
                     resolve({
                         errCode: 2,
-                        errMessage: `Your's email isn't exist in your system. plz try other email`
+                        errMessage: 'Tài khoản của bạn không tồn tại'
                     })
                 }
 

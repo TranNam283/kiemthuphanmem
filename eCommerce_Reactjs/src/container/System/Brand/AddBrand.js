@@ -1,12 +1,10 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createAllCodeService, getDetailAllcodeById, UpdateAllcodeService } from '../../../services/userService';
 
 import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 
-import moment from 'moment';
 const AddBrand = (props) => {
 
 
@@ -26,12 +24,12 @@ const AddBrand = (props) => {
                 setisActionADD(false)
                 let allcode = await getDetailAllcodeById(id)
                 if (allcode && allcode.errCode === 0) {
-                    setInputValues({ ...inputValues, ["value"]: allcode.data.value, ["code"]: allcode.data.code })
+                    setInputValues(allcode.data)
                 }
             }
             fetchDetailCategory()
         }
-    }, [])
+    }, [id])
 
     const handleOnChange = event => {
         const { name, value } = event.target;
@@ -49,8 +47,8 @@ const AddBrand = (props) => {
                 toast.success("Thêm nhãn hàng thành công")
                 setInputValues({
                     ...inputValues,
-                    ["value"]: '',
-                    ["code"]: ''
+                    value: '',
+                    code: ''
                 })
             }
             else if (res && res.errCode === 2) {

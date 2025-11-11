@@ -1,10 +1,8 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import moment from 'moment';
-import { toast } from 'react-toastify';
 
-import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from 'reactstrap';
+import { Modal, ModalFooter, ModalBody, Button } from 'reactstrap';
 import '../User/StoreVoucher.scss';
 import { getAllVoucherByUserIdService } from '../../services/userService';
 import CommonUtils from '../../utils/CommonUtils';
@@ -12,9 +10,6 @@ import VoucherItemSmall from '../User/VoucherItemSmall';
 
 
 const VoucherModal = (props) => {
-    const [inputValues, setInputValues] = useState({
-        codeVoucher: '', activeBtn: false
-    });
     const [dataVoucher, setdataVoucher] = useState([])
     let handleCloseModal = () => {
         props.closeModal()
@@ -23,12 +18,12 @@ const VoucherModal = (props) => {
         //  lon hon la false
         //  be hon la true
 
-        var parts = d1.split('/');
-        var d1 = Number(parts[2] + parts[1] + parts[0]);
-        parts = d2.split('/');
-        var d2 = Number(parts[2] + parts[1] + parts[0]);
-        if (d1 <= d2) return true
-        if (d1 >= d2) return false
+        const d1Parts = d1.split('/');
+        const firstDateValue = Number(d1Parts[2] + d1Parts[1] + d1Parts[0]);
+        const d2Parts = d2.split('/');
+        const secondDateValue = Number(d2Parts[2] + d2Parts[1] + d2Parts[0]);
+        if (firstDateValue <= secondDateValue) return true
+        if (firstDateValue >= secondDateValue) return false
 
     }
     useEffect(() => {
@@ -54,7 +49,7 @@ const VoucherModal = (props) => {
                         let minValue = arrData.data[i].voucherData.typeVoucherOfVoucherData.minValue
 
                         if (amount > usedAmount && compareDates(toDate, nowDate) === false && compareDates(fromDate, nowDate) === true && minValue <= props.price) {
-                            arrTemp[i] = arrData.data[i]
+                            arrTemp.push(arrData.data[i])
 
                         }
                     }
@@ -65,16 +60,7 @@ const VoucherModal = (props) => {
             fetchData()
         }
 
-    }, [props.isOpenModal])
-    const handleOnChange = event => {
-        const { name, value } = event.target;
-
-        if (value !== '') {
-            setInputValues({ ...inputValues, ["activeBtn"]: true, [name]: value })
-        } else {
-            setInputValues({ ...inputValues, ["activeBtn"]: false, [name]: value })
-        }
-    };
+    }, [props.id, props.isOpenModal, props.price])
 
     let closeModalFromVoucherItem = () => {
         props.closeModalFromVoucherItem()

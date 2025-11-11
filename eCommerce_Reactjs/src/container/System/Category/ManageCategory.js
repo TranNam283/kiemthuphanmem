@@ -1,90 +1,58 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { useFetchAllcode } from '../../customize/fetch';
+import React, { useCallback, useEffect, useState } from 'react';
 import { DeleteAllcodeService, getListAllCodeService } from '../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 import ReactPaginate from 'react-paginate';
 import FormSearch from '../../../component/Search/FormSearch';
 
 const ManageCategory = () => {
 
     const [dataCategory, setdataCategory] = useState([])
-    const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
+    const [count, setCount] = useState(0)
+    const [numberPage, setnumberPage] = useState(0)
     const [keyword, setkeyword] = useState('')
-    useEffect(() => {
-       
-            fetchData(keyword);
-        
-
-    }, [])
-    let fetchData = async (keyword) => {
-        let arrData = await getListAllCodeService({
-
+    const fetchData = useCallback(async (searchKeyword, offset = 0) => {
+        const arrData = await getListAllCodeService({
             type: 'CATEGORY',
             limit: PAGINATION.pagerow,
-            offset: 0,
-            keyword:keyword
-
+            offset,
+            keyword: searchKeyword
         })
         if (arrData && arrData.errCode === 0) {
             setdataCategory(arrData.data)
             setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
         }
-    }
-    let handleDeleteCategory = async (event, id) => {
-        event.preventDefault();
-        let res = await DeleteAllcodeService(id)
+    }, [])
+    useEffect(() => {
+        const loadInitial = async () => {
+            await fetchData('')
+        }
+        loadInitial()
+    }, [fetchData])
+    let handleDeleteCategory = async (id) => {
+        const res = await DeleteAllcodeService(id)
         if (res && res.errCode === 0) {
             toast.success("Xóa danh mục thành công")
-            let arrData = await getListAllCodeService({
-
-                type: 'CATEGORY',
-                limit: PAGINATION.pagerow,
-                offset: numberPage * PAGINATION.pagerow,
-                keyword:keyword
-
-            })
-            if (arrData && arrData.errCode === 0) {
-                setdataCategory(arrData.data)
-                setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
-            }
+            await fetchData(keyword, numberPage * PAGINATION.pagerow)
 
         } else toast.error("Xóa danh mục thất bại")
     }
     let handleChangePage = async (number) => {
         setnumberPage(number.selected)
-        let arrData = await getListAllCodeService({
-
-            type: 'CATEGORY',
-            limit: PAGINATION.pagerow,
-            offset: number.selected * PAGINATION.pagerow,
-            keyword:keyword
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataCategory(arrData.data)
-
-        }
+        await fetchData(keyword, number.selected * PAGINATION.pagerow)
     }
     let handleSearchCategory = (keyword) =>{
-        fetchData(keyword)
         setkeyword(keyword)
+        setnumberPage(0)
+        fetchData(keyword)
     }
     let handleOnchangeSearch = (keyword) =>{
         if(keyword === ''){
-            fetchData(keyword)
             setkeyword(keyword)
+            setnumberPage(0)
+            fetchData(keyword)
         }
     }
     let handleOnClickExport =async () =>{
@@ -94,7 +62,7 @@ const ManageCategory = () => {
             offset: '',
             keyword:''
         })
-        if(res && res.errCode == 0){
+        if(res && res.errCode === 0){
             await CommonUtils.exportExcel(res.data,"Danh sách danh mục","ListCategory")
         }
        
@@ -141,7 +109,7 @@ const ManageCategory = () => {
                                                 <td>
                                                     <Link to={`/admin/edit-category/${item.id}`}>Edit</Link>
                                                     &nbsp; &nbsp;
-                                                    <a href="#" onClick={(event) => handleDeleteCategory(event, item.id)} >Delete</a>
+                                                    <button type="button" className="btn btn-link p-0" onClick={() => handleDeleteCategory(item.id)} >Delete</button>
                                                 </td>
                                             </tr>
                                         )

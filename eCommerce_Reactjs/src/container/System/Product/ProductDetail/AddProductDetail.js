@@ -1,5 +1,4 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
@@ -17,14 +16,14 @@ const AddProductDetail = (props) => {
         width: '', height: '', sizeId: '', originalPrice: '', discountPrice: '',
         image: '', imageReview: '', isOpen: false, nameDetail: '', description: '', weight: ''
     });
-
-    if (dataSize && dataSize.length > 0 && inputValues.sizeId === '') {
-
-        setInputValues({ ...inputValues, ["sizeId"]: dataSize[0].code })
-    }
+    useEffect(() => {
+        if (dataSize && dataSize.length > 0 && inputValues.sizeId === '') {
+            setInputValues(prev => ({ ...prev, sizeId: dataSize[0].code }));
+        }
+    }, [dataSize, inputValues.sizeId])
     const handleOnChange = event => {
         const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
+        setInputValues(prev => ({ ...prev, [name]: value }));
 
     };
 
@@ -37,14 +36,14 @@ const AddProductDetail = (props) => {
         else{
             let base64 = await CommonUtils.getBase64(file);
             let objectUrl = URL.createObjectURL(file)
-            setInputValues({ ...inputValues, ["image"]: base64, ["imageReview"]: objectUrl })
+            setInputValues(prev => ({ ...prev, image: base64, imageReview: objectUrl }))
 
         }
     }
     let openPreviewImage = () => {
         if (!inputValues.imageReview) return;
 
-        setInputValues({ ...inputValues, ["isOpen"]: true })
+        setInputValues(prev => ({ ...prev, isOpen: true }))
     }
     let handleSaveProductDetail = async () => {
 
@@ -66,17 +65,17 @@ const AddProductDetail = (props) => {
             setInputValues({
                 ...inputValues,
 
-                ["width"]: '',
-                ["height"]: '',
-                ["description"]: '',
-                ["sizeId"]: '',
+                width: '',
+                height: '',
+                description: '',
+                sizeId: '',
                
-                ["originalPrice"]: '',
-                ["discountPrice"]: '',
-                ["image"]: '',
-                ["imageReview"]: '',
-                ["nameDetail"]: '',
-                ["weight"]: '',
+                originalPrice: '',
+                discountPrice: '',
+                image: '',
+                imageReview: '',
+                nameDetail: '',
+                weight: '',
             })
         } else {
             toast.error(res.errMessage)
@@ -159,7 +158,7 @@ const AddProductDetail = (props) => {
             </div>
             {inputValues.isOpen === true &&
                 <Lightbox mainSrc={inputValues.imageReview}
-                    onCloseRequest={() => setInputValues({ ...inputValues, ["isOpen"]: false })}
+                    onCloseRequest={() => setInputValues(prev => ({ ...prev, isOpen: false }))}
                 />
             }
         </div>

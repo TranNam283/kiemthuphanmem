@@ -1,6 +1,4 @@
-import React from "react";
-import { useEffect, useState } from 'react';
-import { useHistory } from "react-router";
+import React, { useState } from "react";
 import { toast } from 'react-toastify';
 import './LoginWebPage.css';
 import { FacebookLoginButton, GoogleLoginButton } from "react-social-login-buttons";
@@ -8,17 +6,18 @@ import { handleLoginService, checkPhonenumberEmail, createNewUser } from '../../
 import Otp from "./Otp";
 import { authentication } from "../../utils/firebase";
 import { signInWithPopup, FacebookAuthProvider, GoogleAuthProvider } from 'firebase/auth'
-import { async } from "@firebase/util";
 const LoginWebPage = () => {
 
     const [inputValues, setInputValues] = useState({
         email: '', password: 'passwordsecrect', lastName: '', phonenumber: '', isOpen: false, dataUser: {}
     });
-    let history = useHistory()
     const handleOnChange = event => {
         const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
+        setInputValues(prev => ({ ...prev, [name]: value }));
 
+    };
+    const handleSwitchClick = event => {
+        event.preventDefault();
     };
     let handleLogin = async () => {
         const element = document.querySelector('form');
@@ -92,16 +91,17 @@ const LoginWebPage = () => {
         if (res.isCheck === true) {
             toast.error(res.errMessage)
         } else {
-            setInputValues({
-                ...inputValues, ["dataUser"]:
-                {
-                    email: inputValues.email,
-                    lastName: inputValues.lastName,
-                    phonenumber: inputValues.phonenumber,
-                    password: inputValues.password,
+            setInputValues(prev => ({
+                ...prev,
+                dataUser: {
+                    email: prev.email,
+                    lastName: prev.lastName,
+                    phonenumber: prev.phonenumber,
+                    password: prev.password,
                     roleId: 'R2',
-                }, ["isOpen"]: true
-            })
+                },
+                isOpen: true
+            }))
         }
 
 
@@ -138,12 +138,12 @@ const LoginWebPage = () => {
         })
 
         if (res.isCheck === true) {
-            setInputValues({
-                ...inputValues,
-                ["email"]: re.user.providerData[0].email,
+            setInputValues(prev => ({
+                ...prev,
+                email: re.user.providerData[0].email,
 
 
-            })
+            }))
             handleLoginSocial(re.user.providerData[0].email)
 
         } else {
@@ -194,7 +194,7 @@ const LoginWebPage = () => {
                             <div className="row">
                                 {/* Brand Box */}
                                 <div className="col-sm-6 brand">
-                                    <a href="#" className="logo">MR <span>.</span></a>
+                                    <a href="/" className="logo">MR <span>.</span></a>
                                     <div className="heading">
                                         <h2>Esier</h2>
                                         <p>Sự lựa chọn của bạn</p>
@@ -216,7 +216,7 @@ const LoginWebPage = () => {
                                             </div>
                                             <div className="CTA">
                                                 <input onClick={() => handleLogin()} type="submit" value="Đăng nhập" />
-                                                <a style={{ cursor: 'pointer', }} className="switch">Tài khoản mới</a>
+                                                <a href="/" onClick={handleSwitchClick} style={{ cursor: 'pointer' }} className="switch">Tài khoản mới</a>
                                             </div>
                                             <FacebookLoginButton text="Đăng nhập với Facebook" iconSize="25px" style={{ width: "300px", height: "40px", fontSize: "16px", marginTop: "40px", marginBottom: "10px" }} onClick={() => signInwithFacebook()} />
                                             <GoogleLoginButton text="Đăng nhập với Google" iconSize="25px" style={{ width: "300px", height: "40px", fontSize: "16px" }} onClick={() => signInwithGoogle()} />
@@ -252,7 +252,7 @@ const LoginWebPage = () => {
                                             </div>
                                             <div className="CTA">
                                                 <input onClick={() => handleSaveUser()} type="submit" value="Lưu" id="submit" />
-                                                <a style={{ cursor: 'pointer' }} className="switch">Tôi có tài khoản</a>
+                                                <a href="/" onClick={handleSwitchClick} style={{ cursor: 'pointer' }} className="switch">Tôi có tài khoản</a>
                                             </div>
                                         </form>
                                     </div>{/* End Signup Form */}

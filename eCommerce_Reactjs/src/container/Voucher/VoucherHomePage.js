@@ -1,45 +1,33 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import bannerPhoto from '../../../src/resources/img/banner-voucher.jfif'
 import voucherTodayPhoto from '../../../src/resources/img/voucher-today.png'
 import voucherAllPhoto from '../../../src/resources/img/voucher-all.jfif';
 import applyVoucherPhoto from '../../../src/resources/img/applyVoucher.jfif';
-import logoVoucher from '../../../src/resources/img/logoVoucher.png'
 import './VoucherHomePage.scss';
 import VoucherItem from './VoucherItem';
 import { getAllVoucher } from '../../services/userService';
-import moment, { now } from 'moment';
+import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import { saveUserVoucherService } from '../../services/userService';
 import CommonUtils from '../../utils/CommonUtils';
+const compareDates = (firstDate, secondDate) => {
+    const firstParts = firstDate.split('/');
+    const firstNumeric = Number(firstParts[2] + firstParts[1] + firstParts[0]);
+    const secondParts = secondDate.split('/');
+    const secondNumeric = Number(secondParts[2] + secondParts[1] + secondParts[0]);
+    if (firstNumeric <= secondNumeric) return true;
+    if (firstNumeric >= secondNumeric) return false;
+    return false;
+}
 function VoucherHomePage(props) {
     const [dataVoucher, setdataVoucher] = useState([])
     const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
     const [user, setUser] = useState({})
-    function compareDates(d1, d2) {
-        var parts = d1.split('/');
-        var d1 = Number(parts[2] + parts[1] + parts[0]);
-        parts = d2.split('/');
-        var d2 = Number(parts[2] + parts[1] + parts[0]);
-        if (d1 <= d2) return true
-        if (d1 >= d2) return false
 
-    }
-
-    useEffect(() => {
-        try {
-            const userData = JSON.parse(localStorage.getItem('userData'));
-            setUser(userData)
-            fetchData();
-        } catch (error) {
-            console.log(error)
-        }
-
-    }, [])
-    let fetchData = async () => {
+    const fetchData = useCallback(async () => {
         let arrData = await getAllVoucher({
 
             limit: PAGINATION.pagerow,
@@ -63,9 +51,18 @@ function VoucherHomePage(props) {
             setdataVoucher(arrTemp)
             setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
         }
-    }
+    }, [])
+    useEffect(() => {
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            setUser(userData)
+            fetchData();
+        } catch (error) {
+            console.log(error)
+        }
+
+    }, [fetchData])
     let handleChangePage = async (number) => {
-        setnumberPage(number.selected)
         let arrData = await getAllVoucher({
             limit: PAGINATION.pagerow,
             offset: number.selected * PAGINATION.pagerow
@@ -96,10 +93,10 @@ function VoucherHomePage(props) {
     return (
         <div className="voucher-container">
             <div className="voucher-banner">
-                <img className="photo-banner" src={bannerPhoto}></img>
-                <img src={voucherTodayPhoto}></img>
-                <img src={voucherAllPhoto}></img>
-                <img src={applyVoucherPhoto}></img>
+                <img className="photo-banner" src={bannerPhoto} alt="Voucher banner" />
+                <img src={voucherTodayPhoto} alt="Voucher hôm nay" />
+                <img src={voucherAllPhoto} alt="Danh sách voucher" />
+                <img src={applyVoucherPhoto} alt="Hướng dẫn áp dụng voucher" />
             </div>
             <div className="voucher-list">
                 {dataVoucher && dataVoucher.length > 0 &&

@@ -1,7 +1,5 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getAllBanner, deleteBannerService } from '../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
@@ -9,14 +7,7 @@ import './AddBanner.scss';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    useParams
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 import FormSearch from '../../../component/Search/FormSearch';
 
 const ManageBanner = () => {
@@ -27,10 +18,8 @@ const ManageBanner = () => {
     const [count, setCount] = useState('')
     const [numberPage, setnumberPage] = useState('')
     useEffect(() => {
-      
-         loadBanner(keyword)
-     
-    }, [])
+        loadBanner(keyword)
+    }, [keyword])
     let loadBanner = async (keyword) => {
         let arrData = await getAllBanner({
 
@@ -86,14 +75,12 @@ const ManageBanner = () => {
 
         }
     }
-    let handleSearchBanner = (keyword) =>{
-        loadBanner(keyword)
-        setkeyword(keyword)
+    let handleSearchBanner = (searchKeyword) =>{
+        setkeyword(searchKeyword)
     }
-    let handleOnchangeSearch = (keyword) =>{
-        if(keyword === ''){
-            loadBanner(keyword)
-            setkeyword(keyword)
+    let handleOnchangeSearch = (searchKeyword) =>{
+        if(searchKeyword === ''){
+            setkeyword(searchKeyword)
         }
     }
     let handleOnClickExport =async () =>{

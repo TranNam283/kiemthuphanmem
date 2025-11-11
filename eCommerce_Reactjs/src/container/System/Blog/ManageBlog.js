@@ -1,7 +1,5 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { getAllBlog, deleteBlogService } from '../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
@@ -9,14 +7,7 @@ import '../Banner/AddBanner.scss';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    useParams
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 import FormSearch from '../../../component/Search/FormSearch';
 
 const ManageBlog = () => {
@@ -27,24 +18,23 @@ const ManageBlog = () => {
     const [count, setCount] = useState('')
     const [numberPage, setnumberPage] = useState('')
     const [keyword, setkeyword] = useState('')
-    useEffect(() => {
-        
-            loadBlog(keyword)
-    
-    }, [])
-    let loadBlog = async (keyword) => {
+    const loadBlog = useCallback(async (searchKeyword) => {
         let arrData = await getAllBlog({
             subjectId:'',
             limit: PAGINATION.pagerow,
             offset: 0,
-            keyword:keyword
+            keyword:searchKeyword
 
         })
         if (arrData && arrData.errCode === 0) {
             setdataBlog(arrData.data)
             setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
         }
-    }
+    }, [])
+
+    useEffect(() => {
+        loadBlog(keyword)
+    }, [keyword, loadBlog])
 
 
     let openPreviewImage = (url) => {
@@ -89,14 +79,12 @@ const ManageBlog = () => {
 
         }
     }
-    let handleSearchBlog = (keyword) =>{
-        loadBlog(keyword)
-        setkeyword(keyword)
+    let handleSearchBlog = (searchKeyword) =>{
+        setkeyword(searchKeyword)
     }
-    let handleOnchangeSearch = (keyword) =>{
-        if(keyword === ''){
-            loadBlog(keyword)
-            setkeyword(keyword)
+    let handleOnchangeSearch = (searchKeyword) =>{
+        if(searchKeyword === ''){
+            setkeyword(searchKeyword)
         }
     }
     let handleOnClickExport =async () =>{
@@ -106,7 +94,7 @@ const ManageBlog = () => {
             offset:'',
             keyword:''
         })
-        if(res && res.errCode == 0){
+        if(res && res.errCode === 0){
             res.data.forEach(element => {
                 element.image = ""
             })
@@ -135,7 +123,7 @@ const ManageBlog = () => {
                     </div>
                     </div>
                     <div className="table-responsive">
-                        <table className="table table-bordered" style={{ border: '1' }} width="100%" cellspacing="0">
+                        <table className="table table-bordered" style={{ border: '1' }} width="100%" cellSpacing="0">
                             <thead>
                                 <tr>
                                     <th>STT</th>

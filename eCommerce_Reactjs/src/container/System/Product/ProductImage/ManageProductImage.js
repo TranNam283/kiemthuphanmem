@@ -1,25 +1,16 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     getAllProductDetailImageByIdService, createNewProductImageService, UpdateProductDetailImageService,
     DeleteProductDetailImageService, getAllProductDetailSizeByIdService, createNewProductSizeService,
     UpdateProductDetailSizeService, DeleteProductDetailSizeService
 } from '../../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import './ManageProductImage.scss';
 import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css';
 import { PAGINATION } from '../../../../utils/constant';
 import ReactPaginate from 'react-paginate';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    useParams
-} from "react-router-dom";
+import { useParams } from "react-router-dom";
 import AddImageModal from './AddImageModal';
 import AddSizeModal from './AddSizeModal';
 const ManageProductImage = () => {
@@ -33,46 +24,39 @@ const ManageProductImage = () => {
     const [imgPreview, setimgPreview] = useState('')
     const [productImageId, setproductImageId] = useState('')
     const [productSizeId, setproductSizeId] = useState('')
-    const [count, setCount] = useState('')
-    const [countSize, setcountSizes] = useState('')
-    const [numberPage, setnumberPage] = useState('')
-    useEffect(() => {
-
-        let fetchProductDetailImage = async () => {
-            await loadProductDetailImage()
-        }
-        let fetchProductSize = async () => {
-            await loadProductDetailSize()
-        }
-        fetchProductDetailImage()
-        fetchProductSize()
-
-    }, [])
-    let loadProductDetailImage = async () => {
-
-        let arrData = await getAllProductDetailImageByIdService({
-
-            id: id,
+    const [count, setCount] = useState(0)
+    const [countSize, setcountSizes] = useState(0)
+    const [numberPage, setnumberPage] = useState(0)
+    const loadProductDetailImage = useCallback(async (page = 0) => {
+        const arrData = await getAllProductDetailImageByIdService({
+            id,
             limit: PAGINATION.pagerow,
-            offset: 0
-
+            offset: page * PAGINATION.pagerow
         })
         if (arrData && arrData.errCode === 0) {
             setdataProductDetailImage(arrData.data)
             setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
         }
-    }
-    let loadProductDetailSize = async () => {
-        let arrSize = await getAllProductDetailSizeByIdService({
-            id: id,
+    }, [id])
+    const loadProductDetailSize = useCallback(async (page = 0) => {
+        const arrSize = await getAllProductDetailSizeByIdService({
+            id,
             limit: PAGINATION.pagerow,
-            offset: 0
+            offset: page * PAGINATION.pagerow
         })
         if (arrSize && arrSize.errCode === 0) {
             setdataProductDetailSize(arrSize.data)
             setcountSizes(Math.ceil(arrSize.count / PAGINATION.pagerow))
         }
-    }
+    }, [id])
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            await loadProductDetailImage()
+            await loadProductDetailSize()
+        }
+        fetchInitialData()
+
+    }, [loadProductDetailImage, loadProductDetailSize])
     let openPreviewImage = (url) => {
 
 
@@ -181,17 +165,7 @@ const ManageProductImage = () => {
         })
         if (response && response.errCode === 0) {
             toast.success("Xóa hình ảnh thành công !")
-            let arrData = await getAllProductDetailImageByIdService({
-
-                id: id,
-                limit: PAGINATION.pagerow,
-                offset: numberPage * PAGINATION.pagerow
-
-            })
-            if (arrData && arrData.errCode === 0) {
-                setdataProductDetailImage(arrData.data)
-                setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
-            }
+            await loadProductDetailImage(numberPage)
         } else {
             toast.error("Xóa hình ảnh thất bại !")
         }
@@ -204,46 +178,18 @@ const ManageProductImage = () => {
         })
         if (response && response.errCode === 0) {
             toast.success("Xóa kích thước thành công !")
-            let arrData = await getAllProductDetailSizeByIdService({
-
-                id: id,
-                limit: PAGINATION.pagerow,
-                offset: numberPage * PAGINATION.pagerow
-
-            })
-            if (arrData && arrData.errCode === 0) {
-                setdataProductDetailSize(arrData.data)
-                setcountSizes(Math.ceil(arrData.count / PAGINATION.pagerow))
-            }
+            await loadProductDetailSize(numberPage)
         } else {
             toast.error("Xóa hình ảnh thất bại !")
         }
     }
     let handleChangePage = async (number) => {
         setnumberPage(number.selected)
-        let arrData = await getAllProductDetailImageByIdService({
-
-            id: id,
-            limit: PAGINATION.pagerow,
-            offset: number.selected * PAGINATION.pagerow
-
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataProductDetailImage(arrData.data)
-
-        }
+        await loadProductDetailImage(number.selected)
     }
     let handleChangePageProductSize = async (number) => {
         setnumberPage(number.selected)
-        let arrSize = await getAllProductDetailSizeByIdService({
-            id: id,
-            limit: PAGINATION.pagerow,
-            offset: number.selected * PAGINATION.pagerow
-        })
-        if (arrSize && arrSize.errCode === 0) {
-            setdataProductDetailSize(arrSize.data)
-
-        }
+        await loadProductDetailSize(number.selected)
     }
     return (
         <div className="container-fluid px-4">

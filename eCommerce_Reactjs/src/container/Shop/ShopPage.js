@@ -2,14 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import MainShop from '../../component/Shop/MainShop';
 import Category from '../../component/Shop/Category';
 import Brand from '../../component/Shop/Brand';
-import Pagination from '../../component/Shop/Pagination';
-import Header from '../Header/Header';
-import Footer from '../Footer/Footer';
-import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 function ShopPage(props) {
-
-    useEffect(async () => {
+    useEffect(() => {
         window.scrollTo(0, 0);
     }, [])
 

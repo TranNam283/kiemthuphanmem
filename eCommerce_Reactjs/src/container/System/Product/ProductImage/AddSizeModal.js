@@ -1,21 +1,8 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
-import CommonUtils from '../../../../utils/CommonUtils';
-import moment from 'moment';
-import { toast } from 'react-toastify';
-import Lightbox from 'react-image-lightbox';
-import 'react-image-lightbox/style.css';
 import { useFetchAllcode } from '../../../customize/fetch';
-import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from 'reactstrap';
+import { Modal, ModalFooter, ModalBody, Button } from 'reactstrap';
 import { getProductDetailSizeByIdService } from '../../../../services/userService';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    useParams
-} from "react-router-dom";
 
 
 
@@ -26,30 +13,37 @@ const AddSizeModal = (props) => {
     });
     const handleOnChange = event => {
         const { name, value } = event.target;
-        setInputValues({ ...inputValues, [name]: value });
+        setInputValues(prev => ({ ...prev, [name]: value }));
 
     };
-    if (dataSize && dataSize.length > 0 && inputValues.sizeId === '') {
-
-        setInputValues({ ...inputValues, ["sizeId"]: dataSize[0].code })
-    }
     useEffect(() => {
-        let id = props.productSizeId
+        if (dataSize && dataSize.length > 0 && inputValues.sizeId === '') {
+            setInputValues(prev => ({ ...prev, sizeId: dataSize[0].code }));
+        }
+    }, [dataSize, inputValues.sizeId])
+    useEffect(() => {
+        const id = props.productSizeId
 
-        if (id) {
-            let fetchDetailProductSize = async () => {
-                let res = await getProductDetailSizeByIdService(id)
+        if (props.isOpenModal && id) {
+            const fetchDetailProductSize = async () => {
+                const res = await getProductDetailSizeByIdService(id)
                 if (res && res.errCode === 0) {
-                    setInputValues({
-                        ...inputValues, ["isActionUpdate"]: true, ["sizeId"]: res.data.sizeId, ["width"]: res.data.width,
-                        ["height"]: res.data.height,  ["weight"]: res.data.weight
-                    })
+                    setInputValues(prev => ({
+                        ...prev,
+                        isActionUpdate: true,
+                        sizeId: res.data.sizeId,
+                        width: res.data.width,
+                        height: res.data.height,
+                        weight: res.data.weight
+                    }))
 
                 }
             }
             fetchDetailProductSize()
+        } else if (!props.isOpenModal) {
+            setInputValues(prev => ({ ...prev, isActionUpdate: false }))
         }
-    }, [props.isOpenModal])
+    }, [props.isOpenModal, props.productSizeId])
     let handleSaveInfor = () => {
         props.sendDataFromModalSize({
             sizeId: inputValues.sizeId,
@@ -60,11 +54,11 @@ const AddSizeModal = (props) => {
             id: props.productSizeId,
             weight: inputValues.weight
         })
-        setInputValues({ ...inputValues, ["sizeId"]: '',  ["width"]: '', ["height"]: '', ["weight"]: '', ["isActionUpdate"]: false })
+        setInputValues(prev => ({ ...prev, sizeId: '',  width: '', height: '', weight: '', isActionUpdate: false }))
     }
     let handleCloseModal = () => {
         props.closeModal()
-        setInputValues({ ...inputValues, ["sizeId"]: '', ["width"]: '', ["height"]: '', ["weight"]: '', ["isActionUpdate"]: false })
+        setInputValues(prev => ({ ...prev, sizeId: '', width: '', height: '', weight: '', isActionUpdate: false }))
 
     }
     return (

@@ -1,8 +1,7 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getDetailAddressUserByIdService } from '../../services/userService';
 
-import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from 'reactstrap';
+import { Modal, ModalFooter, ModalBody, Button } from 'reactstrap';
 
 const AddressUsersModal = (props) => {
     const [inputValues, setInputValues] = useState({
@@ -14,17 +13,30 @@ const AddressUsersModal = (props) => {
             let fetchDetailAddress = async () => {
                 let res = await getDetailAddressUserByIdService(id)
                 if (res && res.errCode === 0) {
-                    setInputValues({
-                        ...inputValues, ["isActionUpdate"]: true, ["shipName"]: res.data.shipName, ["shipAdress"]: res.data.shipAdress
-                        , ["shipEmail"]: res.data.shipEmail, ["shipPhonenumber"]: res.data.shipPhonenumber
-                    })
+                    setInputValues((prev) => ({
+                        ...prev,
+                        isActionUpdate: true,
+                        shipName: res.data.shipName,
+                        shipAdress: res.data.shipAdress,
+                        shipEmail: res.data.shipEmail,
+                        shipPhonenumber: res.data.shipPhonenumber
+                    }))
                 }
             }
             fetchDetailAddress()
+        } else {
+            setInputValues((prev) => ({
+                ...prev,
+                isActionUpdate: false,
+                shipName: '',
+                shipAdress: '',
+                shipEmail: '',
+                shipPhonenumber: ''
+            }))
         }
 
 
-    }, [props.isOpenModal])
+    }, [props.addressUserId, props.isOpenModal])
     const handleOnChange = event => {
         const { name, value } = event.target;
         setInputValues({ ...inputValues, [name]: value });
@@ -33,10 +45,14 @@ const AddressUsersModal = (props) => {
     let handleCloseModal = () => {
 
         props.closeModaAddressUser()
-        setInputValues({
-            ...inputValues, ["isActionUpdate"]: false, ["shipName"]: '', ["shipAdress"]: ''
-            , ["shipEmail"]: '', ["shipPhonenumber"]: ''
-        })
+        setInputValues((prev) => ({
+            ...prev,
+            isActionUpdate: false,
+            shipName: '',
+            shipAdress: '',
+            shipEmail: '',
+            shipPhonenumber: ''
+        }))
     }
     let handleSaveInfor = () => {
         props.sendDataFromModalAddress({
@@ -47,14 +63,14 @@ const AddressUsersModal = (props) => {
             id: props.addressUserId,
             isActionUpdate: inputValues.isActionUpdate,
         })
-        setInputValues({
-            ...inputValues,
-            ["shipName"]: '',
-            ["shipAdress"]: '',
-            ["shipEmail"]: '',
-            ["shipPhonenumber"]: '',
-            ["isActionUpdate"]: false
-        })
+        setInputValues((prev) => ({
+            ...prev,
+            shipName: '',
+            shipAdress: '',
+            shipEmail: '',
+            shipPhonenumber: '',
+            isActionUpdate: false
+        }))
     }
 
 

@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Link, NavLink, useHistory, useParams,useLocation  } from 'react-router-dom';
+import { NavLink, useLocation  } from 'react-router-dom';
 
 import {
     paymentOrderVnpayService
 } from '../../services/userService';
 import './OrderHomePage.scss';
-
-import { toast } from 'react-toastify';
-
-import CommonUtils from '../../utils/CommonUtils';
 
 function VnpayPaymentPage(props) {
     const [inputValues, setInputValues] = useState({
@@ -17,7 +13,7 @@ function VnpayPaymentPage(props) {
     const location = useLocation();
     const handleOnChange = event => {
         const { name, value } = event.target;
-        if(name =="amount"){
+        if(name ==="amount"){
             return;
         }
         setInputValues({ ...inputValues, [name]: value });
@@ -25,7 +21,7 @@ function VnpayPaymentPage(props) {
     };
     useEffect(()=>{
         if(location && location.orderData){
-            setInputValues({ ...inputValues, ["amount"]: location.orderData.total });
+            setInputValues((prev) => ({ ...prev, amount: location.orderData.total }));
         }
       
        
@@ -39,7 +35,7 @@ function VnpayPaymentPage(props) {
             language: inputValues.language,
             amount: inputValues.amount
         })
-        if(res && res.errCode ==200){
+        if(res && res.errCode ===200){
             console.log("orderData",location.orderData)
             localStorage.setItem("orderData", JSON.stringify(location.orderData))
         
@@ -54,7 +50,7 @@ function VnpayPaymentPage(props) {
             <div className="wrap-order">
                 <div className="wrap-heading-order">
                     <NavLink to="/" className="navbar-brand logo_h">
-                        <img src="/resources/img/logo.png" alt="" />
+                        <img src="/resources/img/logo.png" alt="Logo" />
                     </NavLink>
                     <span>Thanh Toán VNPAY</span>
                 </div>

@@ -6,7 +6,7 @@ import storeVoucherLogo from '../../../src/resources/img/storeVoucher.png'
 import { getAllTypeShip, getAllAddressUserByUserIdService, createNewAddressUserrService } from '../../services/userService';
 import './ShopCartPage.scss';
 import VoucherModal from './VoucherModal';
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import AddressUsersModal from './AdressUserModal';
 import { toast } from 'react-toastify';
 import CommonUtils from '../../utils/CommonUtils';
@@ -43,12 +43,15 @@ function ShopCartPage(props) {
             }
         }
         fetchTypeShip()
+
+
+    }, [dispatch])
+
+    useEffect(() => {
         if (dataTypeShip && dataTypeShip.price) {
             setpriceShip(dataTypeShip.price)
         }
-
-
-    }, [])
+    }, [dataTypeShip])
 
     let price = 0;
     let closeModal = () => {
@@ -160,7 +163,7 @@ function ShopCartPage(props) {
                                 return (
                                     <div key={index} className="form-check">
                                         <input className="form-check-input" checked={item.id === dataTypeShip.id ? true : false} type="radio" name="exampleRadios" id="exampleRadios1" onChange={() => hanldeOnChangeTypeShip(item)} />
-                                        <label className="form-check-label" for="exampleRadios1">
+                                        <label className="form-check-label" htmlFor="exampleRadios1">
                                             {item.type} - {CommonUtils.formatter.format(item.price)}
                                         </label>
                                     </div>
@@ -177,7 +180,7 @@ function ShopCartPage(props) {
                 <div className="box-shopcart-bottom">
                     <div className="content-left">
                         <div className="wrap-voucher">
-                            <img width="20px" height="20px" style={{ marginLeft: "-3px" }} src={storeVoucherLogo}></img>
+                            <img width="20px" height="20px" style={{ marginLeft: "-3px" }} src={storeVoucherLogo} alt="Voucher icon"></img>
                             <span className="name-easier">Easier voucher</span>
                             <span onClick={() => handleOpenModal()} className="choose-voucher">Chọn Hoặc Nhập Mã</span>
                             {dataVoucher && dataVoucher.voucherData &&
@@ -193,7 +196,7 @@ function ShopCartPage(props) {
                         </div>
 
                         <div className="checkout_btn_inner">
-                            <a onClick={() => handleOpenAddressUserModal()} className="main_btn" >Đi đến thanh toán</a>
+                            <button type="button" onClick={() => handleOpenAddressUserModal()} className="main_btn">Đi đến thanh toán</button>
                         </div>
                     </div>
                 </div>

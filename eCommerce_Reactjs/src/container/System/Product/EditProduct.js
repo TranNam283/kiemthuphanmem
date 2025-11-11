@@ -1,5 +1,4 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,28 +19,28 @@ const EditProduct = (props) => {
         madeby: '', material: '',
     });
 
+    const setStateProduct = useCallback((data) => {
+        setInputValues((prevState) => ({
+            ...prevState,
+            brandId: data.brandId,
+            categoryId: data.categoryId,
+            name: data.name,
+            contentMarkdown: data.contentMarkdown,
+            contentHTML: data.contentHTML,
+            madeby: data.madeby,
+            material: data.material,
+        }))
+
+    }, [])
     useEffect(() => {
-        let fetchProduct = async () => {
-            let res = await getDetailProductByIdService(id)
+        const fetchProduct = async () => {
+            const res = await getDetailProductByIdService(id)
             if (res && res.errCode === 0) {
                 setStateProduct(res.data)
             }
         }
         fetchProduct();
-    }, [])
-    let setStateProduct = (data) => {
-        setInputValues({
-            ...inputValues,
-            ["brandId"]: data.brandId,
-            ["categoryId"]: data.categoryId,
-            ["name"]: data.name,
-            ["contentMarkdown"]: data.contentMarkdown,
-            ["contentHTML"]: data.contentHTML,
-            ["madeby"]: data.madeby,
-            ["material"]: data.material,
-        })
-
-    }
+    }, [id, setStateProduct])
     const handleOnChange = event => {
         const { name, value } = event.target;
         setInputValues({ ...inputValues, [name]: value });
@@ -65,11 +64,11 @@ const EditProduct = (props) => {
         }
     }
     let handleEditorChange = ({ html, text }) => {
-        setInputValues({
-            ...inputValues,
-            ["contentMarkdown"]: text,
-            ["contentHTML"]: html
-        })
+        setInputValues((prevState) => ({
+            ...prevState,
+            contentMarkdown: text,
+            contentHTML: html
+        }))
     }
     return (
         <div className="container-fluid px-4">

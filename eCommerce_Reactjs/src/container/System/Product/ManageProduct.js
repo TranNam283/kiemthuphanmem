@@ -1,49 +1,38 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getAllProductAdmin, handleBanProductService, handleActiveProductService } from '../../../services/userService';
-import moment from 'moment';
 import { toast } from 'react-toastify';
 import { PAGINATION } from '../../../utils/constant';
 import ReactPaginate from 'react-paginate';
 import CommonUtils from '../../../utils/CommonUtils';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect
-} from "react-router-dom";
+import { Link } from "react-router-dom";
 import FormSearch from '../../../component/Search/FormSearch';
 const ManageProduct = () => {
 
     const [dataProduct, setdataProduct] = useState([])
-    const [count, setCount] = useState('')
-    const [numberPage, setnumberPage] = useState('')
+    const [count, setCount] = useState(0)
+    const [numberPage, setnumberPage] = useState(0)
     const [keyword, setkeyword] = useState('')
-    useEffect(() => {
-
-        let fetchProduct = async () => {
-            await loadProduct(keyword)
-        }
-        fetchProduct()
-    }, [])
-    let loadProduct = async (keyword) => {
-        let arrData = await getAllProductAdmin({
+    const loadProduct = useCallback(async ({ search = '', page = 0 } = {}) => {
+        const arrData = await getAllProductAdmin({
 
             sortName: '',
             sortPrice: '',
             categoryId: 'ALL',
             brandId: 'ALL',
             limit: PAGINATION.pagerow,
-            offset: 0,
-            keyword:keyword
+            offset: page * PAGINATION.pagerow,
+            keyword: search
 
         })
         if (arrData && arrData.errCode === 0) {
             setdataProduct(arrData.data)
             setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
         }
-    }
+    }, [])
+    useEffect(() => {
+        loadProduct()
+    }, [loadProduct])
     let handleBanProduct = async (id) => {
 
         let data = await handleBanProductService({
@@ -51,21 +40,7 @@ const ManageProduct = () => {
         })
         if (data && data.errCode === 0) {
             toast.success("Ẩn sản phẩm thành công!")
-            let arrData = await getAllProductAdmin({
-
-                sortName: '',
-                sortPrice: '',
-                categoryId: 'ALL',
-                brandId: 'ALL',
-                keyword:'',
-                limit: PAGINATION.pagerow,
-                offset: numberPage * PAGINATION.pagerow
-
-            })
-            if (arrData && arrData.errCode === 0) {
-                setdataProduct(arrData.data)
-                setCount(Math.ceil(arrData.count / PAGINATION.pagerow))
-            }
+            await loadProduct({ search: keyword, page: numberPage })
         } else {
             toast.error("Ẩn sản phẩm thất bại!")
         }
@@ -77,35 +52,25 @@ const ManageProduct = () => {
         })
         if (data && data.errCode === 0) {
             toast.success("Hiện sản phẩm thành công!")
-            loadProduct('');
+            await loadProduct({ search: keyword, page: numberPage })
         } else {
             toast.error("Hiện sản phẩm thất bại!")
         }
     }
     let handleChangePage = async (number) => {
         setnumberPage(number.selected)
-        let arrData = await getAllProductAdmin({
-            limit: PAGINATION.pagerow,
-            offset: number.selected * PAGINATION.pagerow,
-            sortName: '',
-            sortPrice: '',
-            categoryId: 'ALL',
-            brandId: 'ALL',
-            keyword:keyword
-        })
-        if (arrData && arrData.errCode === 0) {
-            setdataProduct(arrData.data)
-
-        }
+        await loadProduct({ search: keyword, page: number.selected })
     }
     let handleSearchProduct = (keyword) =>{
-        loadProduct(keyword)
         setkeyword(keyword)
+        loadProduct({ search: keyword, page: 0 })
+        setnumberPage(0)
     }
     let handleOnchangeSearch = (keyword) =>{
         if(keyword === ''){
-            loadProduct(keyword)
-            setkeyword(keyword)
+            setkeyword('')
+            loadProduct({ search: '', page: 0 })
+            setnumberPage(0)
          }
         
     }

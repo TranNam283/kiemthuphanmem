@@ -1,19 +1,6 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
 
-import moment from 'moment';
-import { toast } from 'react-toastify';
-
-import { Modal, ModalHeader, ModalFooter, ModalBody, Button } from 'reactstrap';
-
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    useParams
-} from "react-router-dom";
+import { Modal, ModalFooter, ModalBody, Button } from 'reactstrap';
 
 
 

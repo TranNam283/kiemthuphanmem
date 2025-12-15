@@ -4,9 +4,10 @@
   "description": "backend nodejs ecom",
   "main": "server.js",
   "scripts": {
-    "test": "jest --coverage",
-    "test:unit": "jest tests/unit --coverage",
-    "test:integration": "jest tests/integration --coverage",
+    "test": "cross-env NODE_OPTIONS=--no-deprecation jest --coverage",
+    "test:unit": "cross-env NODE_OPTIONS=--no-deprecation jest tests/unit --coverage",
+    "test:integration": "cross-env NODE_OPTIONS=--no-deprecation jest tests/integration --coverage",
+    "test:db": "cross-env RUN_DB_TESTS=1 NODE_OPTIONS=--no-deprecation jest --runInBand --coverage=false --testMatch \"**/*.mysql.int.test.js\"",
     "test:watch": "jest --watch",
     "start": "cross-env NODE_OPTIONS=--no-deprecation nodemon --exec babel-node src/server.js",
     "start:dev": "nodemon --exec babel-node src/server.js",

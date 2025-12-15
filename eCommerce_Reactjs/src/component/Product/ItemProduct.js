@@ -8,6 +8,11 @@ import AddToCartModal from './AddToCartModal';
 function ItemProduct(props) {
     const [isOpenModal, setIsOpenModal] = useState(false);
 
+    const formatPrice = (value) => {
+        if (typeof value !== 'number' || !Number.isFinite(value)) return '';
+        return CommonUtils.formatter.format(value);
+    }
+
     const openAddToCart = (e) => {
         if (e && e.preventDefault) e.preventDefault();
         if (e && e.stopPropagation) e.stopPropagation();
@@ -25,9 +30,9 @@ function ItemProduct(props) {
                         <h4 className="product-name">{props.name}</h4>
                         <div className="product-price-wrapper">
                             <div className="product-price">
-                                <span className="current-price">{CommonUtils.formatter.format(props.discountPrice)}</span>
-                                {props.price !== props.discountPrice && (
-                                    <del className="original-price">{CommonUtils.formatter.format(props.price)}</del>
+                                <span className="current-price">{formatPrice(props.discountPrice)}</span>
+                                {typeof props.price === 'number' && typeof props.discountPrice === 'number' && props.price !== props.discountPrice && (
+                                    <del className="original-price">{formatPrice(props.price)}</del>
                                 )}
                             </div>
                             <button className="btn-cart-icon" onClick={openAddToCart} title="Thêm vào giỏ hàng">

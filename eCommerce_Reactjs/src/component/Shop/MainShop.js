@@ -131,10 +131,22 @@ function MainShop(props) {
             <div className="shop-product-grid">
                     {dataProduct && dataProduct.length > 0 &&
                         dataProduct.map((item, index) => {
+                            const firstDetail = item && item.productDetail ? item.productDetail[0] : null;
+                            const firstImage =
+                                firstDetail && firstDetail.productImage && firstDetail.productImage[0]
+                                    ? firstDetail.productImage[0].image
+                                    : "";
+                            const discountPrice = firstDetail ? firstDetail.discountPrice : null;
+                            const price = firstDetail ? firstDetail.originalPrice : null;
                             return (
                                 <div className="shop-product-item" key={index}>
-                                    <ItemProduct id={item.id} name={item.name} img={item.productDetail[0].productImage[0].image}
-                                        discountPrice={item.productDetail[0].discountPrice} price={item.productDetail[0].originalPrice}></ItemProduct>
+                                    <ItemProduct
+                                        id={item.id}
+                                        name={item.name}
+                                        img={firstImage}
+                                        discountPrice={discountPrice}
+                                        price={price}
+                                    ></ItemProduct>
                                 </div>
                             )
                         })

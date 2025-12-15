@@ -121,7 +121,7 @@ let getAllProductAdmin = (data) => {
         raw: true,
         nest: true,
       };
-      if (data.limit && data.offset) {
+      if (data.limit !== undefined && data.offset !== undefined) {
         objectFilter.limit = +data.limit;
         objectFilter.offset = +data.offset;
       }

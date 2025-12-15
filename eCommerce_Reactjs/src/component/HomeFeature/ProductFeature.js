@@ -49,13 +49,25 @@ function ProductFeature(props) {
                     {props.data && props.data.length > 0 ? (
                         <Slider {...settings}>
                             {props.data.map((item, index) => {
-                                return (
-                                    <div className="slider-item" key={index}>
-                                        <ItemProduct id={item.id} name={item.name} img={item.productDetail[0].productImage[0].image}
-                                            price={item.productDetail[0].originalPrice} discountPrice={item.productDetail[0].discountPrice}>
-                                        </ItemProduct>
-                                    </div>
-                                )
+                                    const firstDetail = item && item.productDetail ? item.productDetail[0] : null;
+                                    const firstImage =
+                                        firstDetail && firstDetail.productImage && firstDetail.productImage[0]
+                                            ? firstDetail.productImage[0].image
+                                            : "";
+                                    const discountPrice = firstDetail ? firstDetail.discountPrice : null;
+                                    const price = firstDetail ? firstDetail.originalPrice : null;
+                                    return (
+                                        <div className="slider-item" key={index}>
+                                            <ItemProduct
+                                                id={item.id}
+                                                name={item.name}
+                                                img={firstImage}
+                                                discountPrice={discountPrice}
+                                                price={price}
+                                            >
+                                            </ItemProduct>
+                                        </div>
+                                    )
                             })}
                         </Slider>
                     ) : (

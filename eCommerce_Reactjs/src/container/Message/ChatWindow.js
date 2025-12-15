@@ -3,7 +3,11 @@ import socketIOClient from "socket.io-client";
 import { loadMessage } from '../../services/userService';
 import moment from 'moment';
 
-const host = process.env.REACT_APP_BACKEND_URL;
+const host =
+  (typeof window !== "undefined" &&
+    window.__APP_CONFIG__ &&
+    window.__APP_CONFIG__.BACKEND_URL) ||
+  process.env.REACT_APP_BACKEND_URL;
 function ChatWindow(props) {
   const [mess, setMess] = useState([]);
   const [userData, setuserData] = useState({});

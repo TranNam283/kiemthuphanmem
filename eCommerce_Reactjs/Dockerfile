@@ -16,6 +16,7 @@ WORKDIR /app
 
 # serve is listed in dependencies
 COPY --from=build /app/build ./build
+COPY --from=build /app/scripts ./scripts
 COPY package*.json ./
 RUN npm install --omit=dev --legacy-peer-deps
 

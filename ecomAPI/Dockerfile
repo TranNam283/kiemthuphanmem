@@ -15,5 +15,5 @@ COPY . .
 # Expose port
 EXPOSE 8080
 
-# Wait for MySQL and start
-CMD ["sh", "-c", "sleep 10 && npm start"]
+# Start in production mode
+CMD ["sh", "-c", "sleep 10 && npm run start:prod"]

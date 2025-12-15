@@ -241,6 +241,43 @@ Thu thập minh chứng:
 - **Timeout DB**: kiểm tra firewall/network, và backend có retry kết nối DB.
 - **Frontend gọi sai backend**: kiểm tra `REACT_APP_BACKEND_URL` đã set trước build.
 
+### 7.1 FE vào được nhưng không thấy sản phẩm
+
+Checklist nhanh (theo thứ tự):
+
+1. Kiểm tra FE đang gọi API về đâu
+
+- Mở DevTools (F12) → tab Network → reload trang.
+- Tìm request tới `/api/get-all-product-user`.
+  - Nếu request đang gọi **cùng domain FE** (ví dụ `https://<fe>.up.railway.app/api/...`) và bị 404 → FE chưa set đúng `REACT_APP_BACKEND_URL`.
+
+2. Đảm bảo FE đã set `REACT_APP_BACKEND_URL` _trước khi build_
+
+- Frontend service → Variables:
+  - `REACT_APP_BACKEND_URL` = `https://<backend-domain>`
+- Sau khi set biến, bấm **Redeploy** (để build lại).
+
+3. Kiểm tra backend có trả dữ liệu không
+
+- Mở trực tiếp các URL:
+  - `https://<backend-domain>/` phải trả `hello`
+  - `https://<backend-domain>/api/get-all-product-user` phải trả JSON danh sách
+
+4. Kiểm tra backend đang đọc đúng DB env
+
+- Mở: `https://<backend-domain>/api/debug-db`
+- Nếu `DB_HOST/DB_NAME/DB_USER` đang là `not set` → bạn chưa set biến môi trường cho backend.
+
+5. DB có dữ liệu chưa?
+
+- Railway MySQL plugin **không tự seed**.
+- Nếu DB trống, API có thể trả danh sách rỗng hoặc lỗi do thiếu bảng.
+- Cách nhanh nhất là import `ecom.sql` theo mục 4.
+
+Ghi chú:
+
+- Nếu bạn chọn chạy migrations (`npx sequelize-cli db:migrate`) trên Railway: dự án đã cấu hình để `sequelize-cli` lấy DB config từ các biến `DB_*` (qua `ecomAPI/src/config/config.js`).
+
 Các lỗi thường gặp trên Railway:
 
 - **Deploy frontend OK nhưng không lên được (crash/restart loop)**: thường do app không listen đúng `PORT`.

@@ -144,6 +144,13 @@ let handleDeleteAllCode = (allcodeId) => {
 let getListAllCodeService = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
+      if (!data || !data.type) {
+        resolve({
+          errCode: 1,
+          errMessage: "Missing required parameters !",
+        });
+        return;
+      }
       let objectFilter = {
         where: { type: data.type },
       };

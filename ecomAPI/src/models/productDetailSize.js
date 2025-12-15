@@ -24,7 +24,8 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: "ProductDetailSize",
-      tableName: "ProductDetailSizes",
+      // Keep consistent with existing table naming in DB/seed (Productdetailsizes)
+      tableName: "Productdetailsizes",
     }
   );
   return ProductDetailSize;

@@ -1,5 +1,34 @@
 import db from "../models/index";
 import { Op } from 'sequelize';
+
+const safeRoomMessageFindAll = async (where) => {
+    try {
+        return await db.RoomMessage.findAll({ where });
+    } catch (error) {
+        const original = error && (error.original || error.parent);
+        const code = original && original.code;
+        const message = (original && (original.sqlMessage || original.message)) || (error && error.message) || '';
+        if (code === 'ER_NO_SUCH_TABLE' && String(message).includes('RoomMessages')) {
+            return [];
+        }
+        throw error;
+    }
+}
+
+const safeRoomMessageFindOne = async (where) => {
+    try {
+        return await db.RoomMessage.findOne({ where });
+    } catch (error) {
+        const original = error && (error.original || error.parent);
+        const code = original && original.code;
+        const message = (original && (original.sqlMessage || original.message)) || (error && error.message) || '';
+        if (code === 'ER_NO_SUCH_TABLE' && String(message).includes('RoomMessages')) {
+            return null;
+        }
+        throw error;
+    }
+}
+
 let createNewRoom = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -12,7 +41,7 @@ let createNewRoom = (data) => {
                 let userAdmin = await db.User.findOne({
                     where:{email:'chat@gmail.com'}
                 })
-                let room = await db.RoomMessage.findOne({where:{userOne:data.userId1}})
+                let room = await safeRoomMessageFindOne({userOne:data.userId1})
                 if(room){
                     resolve({
                         errCode: 2,
@@ -20,10 +49,24 @@ let createNewRoom = (data) => {
                     })
                 }else{
                     if(userAdmin){
-                        let res = await db.RoomMessage.create({
+                        // If RoomMessages table is missing, we can't create rooms yet.
+                        // Return ok so the rest of the site doesn't break; chat will appear empty.
+                        let res;
+                        try {
+                            res = await db.RoomMessage.create({
                             userOne:data.userId1,
                             userTwo:userAdmin.id
-                        })
+                            })
+                        } catch (error) {
+                            const original = error && (error.original || error.parent);
+                            const code = original && original.code;
+                            const message = (original && (original.sqlMessage || original.message)) || (error && error.message) || '';
+                            if (code === 'ER_NO_SUCH_TABLE' && String(message).includes('RoomMessages')) {
+                                resolve({ errCode: 0, errMessage: 'ok' })
+                                return;
+                            }
+                            throw error;
+                        }
                         if(res){
                             resolve({
                                 errCode: 0,
@@ -114,9 +157,7 @@ let listRoomOfUser = (userId) => {
                     errMessage: 'Missing required parameters !'
                 })
             } else {
-              let room = await db.RoomMessage.findAll({
-                where:{userOne:userId}
-              })
+                            let room = await safeRoomMessageFindAll({userOne:userId})
 
              for(let i =0 ; i< room.length; i++){
                 room[i].messageData = await db.Message.findAll({where:{roomId:room[i].id}})
@@ -146,9 +187,7 @@ let listRoomOfAdmin = () => {
 
             let user = await db.User.findOne({where:{email:'chat@gmail.com'}})
             if(user){
-                let room = await db.RoomMessage.findAll({
-                    where:{userTwo:user.id}
-                  })
+                let room = await safeRoomMessageFindAll({userTwo:user.id})
                  for(let i =0 ; i< room.length; i++){
                     room[i].messageData = await db.Message.findAll({where:{roomId:room[i].id}})
                     room[i].userOneData = await db.User.findOne({where:{id:room[i].userOne}})

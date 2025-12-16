@@ -55,6 +55,8 @@ services:
     build:
       context: ./eCommerce_Reactjs
       dockerfile: Dockerfile
+      args:
+        REACT_APP_BACKEND_URL: http://localhost:8080
     container_name: ecom_frontend
     restart: unless-stopped
     ports:

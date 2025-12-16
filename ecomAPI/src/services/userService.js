@@ -41,7 +41,8 @@ let checkUserEmail = (userEmail) => {
 let handleCreateNewUser = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
-      if (!data.email || !data.lastName) {
+      // In the UI, users may provide a single full-name field. Treat lastName as optional.
+      if (!data.email || !data.password) {
         resolve({
           errCode: 2,
           errMessage: "Missing required parameters !",
@@ -58,8 +59,8 @@ let handleCreateNewUser = (data) => {
           await db.User.create({
             email: data.email,
             password: hashPassword,
-            firstName: data.firstName,
-            lastName: data.lastName,
+            firstName: data.firstName || "",
+            lastName: data.lastName || "",
             address: data.address,
             roleId: data.roleId,
             genderId: data.genderId,

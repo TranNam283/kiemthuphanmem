@@ -12,6 +12,7 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation nodemon --exec babel-node src/server.js",
     "start:dev": "nodemon --exec babel-node src/server.js",
     "start:prod": "node --no-deprecation -r @babel/register src/server.js",
+    "migrate": "sequelize-cli db:migrate",
     "build": "echo 'No build step required'",
     "lint": "echo \"No linter configured\""
   },

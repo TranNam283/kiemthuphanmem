@@ -1,5 +1,21 @@
 import db from "../models/index";
 
+const safeFindReceiptDetails = async (where) => {
+    try {
+        return await db.ReceiptDetail.findAll({ where });
+    } catch (error) {
+        const original = error && (error.original || error.parent);
+        const code = original && original.code;
+        const message = (original && (original.sqlMessage || original.message)) || (error && error.message) || '';
+
+        // Some environments seed products but not receipt history tables.
+        if (code === 'ER_NO_SUCH_TABLE' && String(message).includes('ReceiptDetails')) {
+            return [];
+        }
+        throw error;
+    }
+}
+
 
 let addShopCart = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -14,7 +30,7 @@ let addShopCart = (data) => {
                 if (cart) {
                     let res = await db.ProductDetailSize.findOne({ where: { id: data.productdetailsizeId } })
                     if (res) {
-                        let receiptDetail = await db.ReceiptDetail.findAll({ where: { productDetailSizeId: res.id } })
+                        let receiptDetail = await safeFindReceiptDetails({ productDetailSizeId: res.id })
                         let orderDetail = await db.OrderDetail.findAll({ where: { productId: res.id } })
                         let quantity = 0
                         for (let j = 0; j < receiptDetail.length; j++) {
@@ -62,7 +78,7 @@ let addShopCart = (data) => {
                 else {
                     let res = await db.ProductDetailSize.findOne({ where: { id: data.productdetailsizeId } })
                     if (res) {
-                        let receiptDetail = await db.ReceiptDetail.findAll({ where: { productDetailSizeId: res.id } })
+                        let receiptDetail = await safeFindReceiptDetails({ productDetailSizeId: res.id })
                         let orderDetail = await db.OrderDetail.findAll({ where: { productId: res.id } })
                         let quantity = 0
                         for (let j = 0; j < receiptDetail.length; j++) {

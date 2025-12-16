@@ -42,6 +42,25 @@ const toBinaryImage = (value) => {
   }
 };
 
+const safeFindReceiptDetails = async (where) => {
+  try {
+    return await db.ReceiptDetail.findAll({ where });
+  } catch (error) {
+    const original = error && (error.original || error.parent);
+    const code = original && original.code;
+    const message =
+      (original && (original.sqlMessage || original.message)) ||
+      (error && error.message) ||
+      "";
+
+    // Railway/MySQL may not have receipt tables seeded; treat missing table as 0 stock history.
+    if (code === "ER_NO_SUCH_TABLE" && String(message).includes("ReceiptDetails")) {
+      return [];
+    }
+    throw error;
+  }
+};
+
 let createNewProduct = (data) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -378,12 +397,21 @@ let getDetailProductById = (id) => {
           raw: true,
           nest: true,
         });
+        if (!res) {
+          resolve({
+            errCode: 2,
+            errMessage: `The product isn't exist`,
+          });
+          return;
+        }
         let product = await db.Product.findOne({
           where: { id: id },
           raw: false,
         });
-        product.view = product.view + 1;
-        await product.save();
+        if (product) {
+          product.view = (product.view || 0) + 1;
+          await product.save();
+        }
 
         res.productDetail = await db.ProductDetail.findAll({
           where: { productId: res.id },
@@ -417,7 +445,7 @@ let getDetailProductById = (id) => {
             k < res.productDetail[i].productDetailSize.length;
             k++
           ) {
-            let receiptDetail = await db.ReceiptDetail.findAll({
+            let receiptDetail = await safeFindReceiptDetails({
               where: {
                 productDetailSizeId:
                   res.productDetail[i].productDetailSize[k].id,

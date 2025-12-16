@@ -54,7 +54,10 @@ const safeFindReceiptDetails = async (where) => {
       "";
 
     // Railway/MySQL may not have receipt tables seeded; treat missing table as 0 stock history.
-    if (code === "ER_NO_SUCH_TABLE" && String(message).includes("ReceiptDetails")) {
+    if (
+      code === "ER_NO_SUCH_TABLE" &&
+      String(message).includes("ReceiptDetails")
+    ) {
       return [];
     }
     throw error;
@@ -446,10 +449,7 @@ let getDetailProductById = (id) => {
             k++
           ) {
             let receiptDetail = await safeFindReceiptDetails({
-              where: {
-                productDetailSizeId:
-                  res.productDetail[i].productDetailSize[k].id,
-              },
+              productDetailSizeId: res.productDetail[i].productDetailSize[k].id,
             });
             let orderDetail = await db.OrderDetail.findAll({
               where: {
@@ -898,8 +898,8 @@ let getAllProductDetailSizeById = (data) => {
           nest: true,
         });
         for (let i = 0; i < productsize.rows.length; i++) {
-          let receiptDetail = await db.ReceiptDetail.findAll({
-            where: { productDetailSizeId: productsize.rows[i].id },
+          let receiptDetail = await safeFindReceiptDetails({
+            productDetailSizeId: productsize.rows[i].id,
           });
           let orderDetail = await db.OrderDetail.findAll({
             where: { productId: productsize.rows[i].id },

@@ -2,7 +2,11 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Thêm cột document kiểu JSON vào bảng Products
+    // Thêm cột document kiểu JSON vào bảng Products (idempotent)
+    const table = await queryInterface.describeTable("Products");
+    if (table && table.document) {
+      return;
+    }
     await queryInterface.addColumn("Products", "document", {
       type: Sequelize.JSON,
       allowNull: true,
@@ -12,7 +16,11 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    // Xóa cột document khi rollback
+    // Xóa cột document khi rollback (idempotent)
+    const table = await queryInterface.describeTable("Products");
+    if (!table || !table.document) {
+      return;
+    }
     await queryInterface.removeColumn("Products", "document");
   },
 };

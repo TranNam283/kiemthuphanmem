@@ -1,5 +1,125 @@
 # TESTING_REFACTOR_PLAN — KTPM (Web bán quần áo)
 
+## 0) Tình trạng triển khai (cập nhật theo branch `chore/testing-refactor`)
+
+### 0.1) Mình đã làm được gì (đã commit)
+
+- **CI không còn “pass giả” do `--passWithNoTests`**: đã bỏ flag này khỏi workflow frontend và chuyển sang fail khi không có test.
+- **Đã có frontend unit test tối thiểu chạy được**: tạo `eCommerce_Reactjs/src/App.test.js` (React Testing Library) để chứng minh CI chạy test thật.
+- **Khi CI fail → tự tạo Issue + comment PR + upload log** (backend & frontend): đã chèn bước upload artifact + tạo Issue bằng `actions/github-script@v7` + comment PR nếu là PR run.
+- **Fallback khi không tạo được Issue**: tạo file `docs/CI_FAILURES.md` để lưu lỗi (workflow còn cố tạo PR lưu file bằng `peter-evans/create-pull-request@v6`).
+- **Mang artefact dự án “điểm cao” về ktpm** (không placeholder): copy `fullstack-vitejs-books/docs/tests/*` sang `docs/reference-tests/` và copy k6 scripts sang `performance/k6/`.
+- **Traceability dạng file**: tạo `docs/tests/test-cases.csv` và `docs/tests/traceability.csv` để map requirement → test → CI job.
+
+Các file/workflow liên quan (đều tồn tại trong repo ktpm):
+- Workflows: `.github/workflows/backend-ci.yml`, `.github/workflows/frontend-ci.yml`
+- Fallback logs: `docs/CI_FAILURES.md`
+- Docs tham chiếu: `docs/reference-tests/`
+- Performance: `performance/k6/`
+- Traceability: `docs/tests/test-cases.csv`, `docs/tests/traceability.csv`
+
+### 0.2) Bước tiếp theo (ưu tiên)
+
+1) Hoàn thiện nội dung **CI strict rationale (C)** + **Agile analysis (D)** + **V-Model mapping & verification list (E)** ngay trong file này để giảng viên đọc một lần là thấy đủ bằng chứng.
+2) (Tuỳ chọn) Tách job `test:db` (MySQL real) ra CI job riêng để tăng độ tin cậy regression (hiện tại job này **KHÔNG TỒN TẠI** trong workflow).
+
+---
+
+## 9) WHY: Vì sao CI fail phải tự tạo Issue (C)
+
+- **Traceability**: Issue gắn trực tiếp vào `Run URL` + `Commit SHA` giúp truy vết lỗi rõ ràng thay vì chỉ xem log “trôi” trong Actions.
+- **Fast feedback + triage**: Khi fail tự tạo Issue + comment PR, nhóm nhìn thấy lỗi ngay ở đúng nơi làm việc (PR/Issues), tránh pipeline “xanh im lặng” hoặc fail bị bỏ quên.
+- **Minh chứng chấm đồ án**: Giảng viên có thể xem lại lịch sử fail/pass như bằng chứng kiểm thử (Issue body + artifact logs) mà không cần hỏi lại nhóm.
+
+---
+
+## 10) Agile analysis & recommendation (D)
+
+### 10.1) Evidence-based: hiện tại có đang theo Agile không?
+
+**Dựa trên artefact trong repo ktpm:**
+
+- Git history có một số commit dạng “fix nhanh/triage” (ví dụ các commit gần đây tập trung Railway/migration/bugfix). Đây là tín hiệu của vòng lặp feedback, nhưng **chưa đủ để kết luận Agile đầy đủ**.
+- Repo **KHÔNG TỒN TẠI** `CODEOWNERS`.
+- Repo **KHÔNG TỒN TẠI** `.github/ISSUE_TEMPLATE/*`.
+- Repo **KHÔNG TỒN TẠI** artefact quản trị Agile trong filesystem như: `docs/sprint-*`, `docs/backlog.*`, file “Definition of Done”, hoặc config Project board.
+- Dấu hiệu PR trong lịch sử ktpm rất ít (git log có 1 merge PR) → quy trình review/PR-based chưa rõ ràng.
+
+**Đối chiếu repo tham chiếu fullstack-vitejs-books:**
+
+- Git history có nhiều “Merge pull request #.. from .../dev” → có quy trình tách nhánh + PR + merge thường xuyên hơn.
+- Có nhiều commit cập nhật tài liệu/test design → phù hợp mô hình đồ án “điểm cao” (tài liệu + kiểm thử đi kèm).
+
+### 10.2) Khuyến nghị Agile tối giản cho đồ án (nên áp dụng)
+
+- Sprint 1 tuần (nhóm sinh viên dễ theo): backlog nhỏ, ưu tiên bugfix + test.
+- Roles: 1 bạn đóng vai PO (ưu tiên yêu cầu), 1 bạn Scrum Master (giữ nhịp), còn lại dev/test.
+- WIP limit: tối đa 1–2 task/người.
+- Definition of Done (DoD) tối thiểu:
+  - Có test (backend hoặc frontend) cho thay đổi quan trọng.
+  - CI xanh.
+  - Có cập nhật tài liệu nếu thay đổi ảnh hưởng demo.
+
+---
+
+## 11) V-Model mapping & Verification (E)
+
+### 11.1) V-Model (tóm tắt ngắn)
+
+V-Model mapping kỳ vọng:
+
+- Requirements ↔ Acceptance/System test
+- System design ↔ System test
+- Architecture ↔ Integration test
+- Module design ↔ Unit test
+- Implementation ↔ Code + Unit test
+
+### 11.2) Mapping phase → artefact → verification (ktpm)
+
+| Phase (V-Model) | Artefact tương ứng trong ktpm | Verification hiện có | Status |
+|---|---|---|---|
+| Requirements | `README.md`, `docs/PHU_LUC_A_TEST_CASES.md` | Acceptance/System test: **MISSING** | Missing |
+| System design | `docker-compose.yml` (hệ thống gồm mysql/backend/frontend) | System test tự động: **MISSING** | Missing |
+| Architecture | `ecomAPI/src` (services/controllers/models) | Integration tests: `ecomAPI/tests/integration/*.mysql.int.test.js` | Present |
+| Module design | `ecomAPI/src/utils/*Utils.js` | Unit tests: `ecomAPI/tests/unit/*.test.js` | Present |
+| Implementation | `eCommerce_Reactjs/src` + `ecomAPI/src` | Frontend unit tests: `eCommerce_Reactjs/src/App.test.js` | Present |
+| API contract (bổ sung) | Routes/Controllers (backend) | API contract/smoke: `ecomAPI/tests/api/*.test.js` | Present |
+| E2E (bổ sung) | UI flow end-to-end | `eCommerce_Reactjs/cypress/e2e/homepage.cy.js` (spec) nhưng Cypress config/deps: **MISSING** | Missing |
+| Performance (bổ sung) | Non-functional | `performance/k6/*` (đã copy từ repo tham chiếu) | Present |
+
+### 11.3) Verification checklist (đọc nhanh)
+
+- [Present] Backend Unit: `ecomAPI/tests/unit/*.test.js` (CI: `.github/workflows/backend-ci.yml` job `test`)
+- [Present] Backend Integration: `ecomAPI/tests/integration/*.mysql.int.test.js` (CI: **MISSING job** chạy `npm run test:db`)
+- [Present] Backend API contract/smoke: `ecomAPI/tests/api/*.test.js`
+- [Present] Frontend Unit (smoke): `eCommerce_Reactjs/src/App.test.js`
+- [Missing] E2E runnable: `eCommerce_Reactjs/cypress/e2e/*` có spec nhưng thiếu `cypress` dependency + `cypress.config.*`
+- [Present] Performance scripts: `performance/k6/load-test.js`, `performance/k6/stress-test.js`
+
+---
+
+## 12) Notes & Tracing (F)
+
+### 12.1) Requirement IDs tối giản (vì repo chưa có IDs chuẩn)
+
+Repo ktpm hiện **KHÔNG TỒN TẠI** file định nghĩa Requirement IDs riêng; vì vậy dùng IDs tối giản cho đồ án:
+
+- `REQ-AUTH-01`: Đăng ký
+- `REQ-AUTH-02`: Đăng nhập
+- `REQ-PROD-01`: Xem danh sách sản phẩm
+- `REQ-PROD-02`: Xem chi tiết sản phẩm
+- `REQ-CART-01`: Thêm giỏ (theo size)
+- `REQ-ORDER-01`: Tạo đơn
+- `REQ-VOUCHER-01`: Xem/claim voucher
+- `REQ-ADMIN-01`: Admin xem danh sách user
+- `REQ-FE-01`: Frontend load và hiển thị (smoke)
+
+### 12.2) Traceability table (file-based)
+
+- `docs/tests/test-cases.csv`: map requirement → test case name → source file.
+- `docs/tests/traceability.csv`: map requirement → CI workflow/job.
+
+
 ## 1) Yêu cầu bài làm
 
 - Mục tiêu: lập kế hoạch refactor kiểm thử (testing refactor plan) cho dự án **ktpm** (web bán quần áo), dựa trên đối chiếu với dự án tham chiếu **fullstack-vitejs-books**.
@@ -49,7 +169,7 @@
 - Frontend test/e2e:
   - `eCommerce_Reactjs/package.json` có script `test`: `craco test`
   - `eCommerce_Reactjs/cypress/e2e/homepage.cy.js` (file e2e mẫu)
-  - `eCommerce_Reactjs/src/**/*.{test,spec}.js`: **KHÔNG TỒN TẠI**
+  - `eCommerce_Reactjs/src/App.test.js`: **TỒN TẠI**
   - `eCommerce_Reactjs/**/cypress.config.*`: **KHÔNG TỒN TẠI**
   - `eCommerce_Reactjs/package.json` **KHÔNG có** dependency `cypress`: **KHÔNG TỒN TẠI**
 - CI/CD:
@@ -141,7 +261,7 @@
 
 - Script test tồn tại: `eCommerce_Reactjs/package.json` có `test`: `craco test`.
 - Unit test trong source:
-  - `eCommerce_Reactjs/src/**/*.{test,spec}.js`: **KHÔNG TỒN TẠI**
+  - `eCommerce_Reactjs/src/App.test.js`: **TỒN TẠI**
 - E2E:
   - Có file Cypress mẫu `eCommerce_Reactjs/cypress/e2e/homepage.cy.js`
   - Nhưng cấu hình Cypress và dependency Cypress:
@@ -154,7 +274,7 @@
   - Có MySQL service (`mysql:8.0`) và chạy `npm run test:unit`, `npm run test:integration`
   - Có job `security-scan` chạy `npm audit`
 - Frontend workflow: `.github/workflows/frontend-ci.yml`
-  - Chạy `npm test -- --coverage --watchAll=false --passWithNoTests` (có `--passWithNoTests`)
+  - Chạy `npm test -- --coverage --watchAll=false` (không `--passWithNoTests`)
   - Có build `npm run build`
 
 **Nhận xét hiện trạng (tập trung vào quần áo/size/stock):**
@@ -205,13 +325,13 @@
 | Backend integration test (DB thật)       | TỒN TẠI: `ecomAPI/tests/integration/*.mysql.int.test.js` + script `ecomAPI/package.json:test:db`                | TỒN TẠI: `backend/src/test/java/.../integration/*IntegrationTest.java`      |
 | Backend API contract/smoke               | TỒN TẠI: `ecomAPI/tests/api/*.test.js`                                                                          | KHÔNG TỒN TẠI (không có thư mục/artefact tương đương trong repo)            |
 | Backend coverage gate                    | TỒN TẠI: `ecomAPI/jest.config.js` đặt threshold 80%                                                             | KHÔNG TỒN TẠI (không thấy cấu hình coverage plugin trong `backend/pom.xml`) |
-| Frontend unit test (file test trong src) | KHÔNG TỒN TẠI: `eCommerce_Reactjs/src/**/*.{test,spec}.js`                                                      | KHÔNG TỒN TẠI: `frontend/src/**/*.{test,spec}.ts(x)`                        |
+| Frontend unit test (file test trong src) | TỒN TẠI: `eCommerce_Reactjs/src/App.test.js`                                                                    | KHÔNG TỒN TẠI: `frontend/src/**/*.{test,spec}.ts(x)`                        |
 | Frontend test script                     | TỒN TẠI: `eCommerce_Reactjs/package.json` có `test: craco test`                                                 | KHÔNG TỒN TẠI: `frontend/package.json` không có script `test`               |
 | E2E runner (Cypress/Playwright)          | File spec TỒN TẠI: `eCommerce_Reactjs/cypress/e2e/homepage.cy.js`; cấu hình & dependency Cypress: KHÔNG TỒN TẠI | KHÔNG TỒN TẠI: không có Cypress/Playwright config                           |
-| Performance test                         | KHÔNG TỒN TẠI (không có thư mục k6/jmeter trong repo)                                                           | TỒN TẠI: `performance/k6/load-test.js`, `performance/k6/stress-test.js`     |
+| Performance test                         | TỒN TẠI: `performance/k6/load-test.js`, `performance/k6/stress-test.js`                                         | TỒN TẠI: `performance/k6/load-test.js`, `performance/k6/stress-test.js`     |
 | Security scan trong CI                   | TỒN TẠI: `.github/workflows/backend-ci.yml` job `security-scan` chạy `npm audit`                                | KHÔNG TỒN TẠI (workflow không có job security scan riêng)                   |
 | CI chạy test backend                     | TỒN TẠI: `.github/workflows/backend-ci.yml` chạy Jest                                                           | TỒN TẠI: `.github/workflows/ci-cd.yml` chạy `mvn test`                      |
-| CI chạy test frontend                    | TỒN TẠI: `.github/workflows/frontend-ci.yml` chạy `npm test --passWithNoTests`                                  | KHÔNG TỒN TẠI (workflow chỉ build+lint frontend)                            |
+| CI chạy test frontend                    | TỒN TẠI: `.github/workflows/frontend-ci.yml` chạy `npm test` (không `--passWithNoTests`)                        | KHÔNG TỒN TẠI (workflow chỉ build+lint frontend)                            |
 | Tài liệu test (manual)                   | TỒN TẠI: `docs/PHU_LUC_A_TEST_CASES.md`                                                                         | TỒN TẠI: `docs/tests/\*.docx                                                | \*.xlsx` |
 
 ---
@@ -226,7 +346,7 @@
 
 ### 5.2) Hiện trạng cần chỉnh (theo artefact)
 
-- Frontend workflow dùng `--passWithNoTests` (`.github/workflows/frontend-ci.yml`), trong khi `eCommerce_Reactjs/src` không có test file → kết quả CI có thể xanh dù không có unit test frontend.
+- Trước đây frontend workflow dùng `--passWithNoTests` và không có test file → CI có thể xanh dù không test. Hiện đã bỏ flag và đã có `eCommerce_Reactjs/src/App.test.js` để CI chạy test thật.
 - Cypress spec có file nhưng thiếu dependency/config → E2E chưa chạy được bằng script/CI.
 - Backend coverage threshold có trong `ecomAPI/jest.config.js` nhưng chỉ collect từ `src/utils/*Utils.js` → phạm vi coverage chưa bao trùm logic chính ở `src/services/*`.
 
@@ -252,7 +372,7 @@
 **Giai đoạn C — Frontend unit test (ưu tiên trung bình/thấp):**
 
 - Dự án đã có `@testing-library/react` / `@testing-library/jest-dom` trong dependency.
-- Nhưng file test không có trong `eCommerce_Reactjs/src`.
+- Hiện đã có test tối thiểu: `eCommerce_Reactjs/src/App.test.js` (smoke), nhưng coverage hành vi người dùng vẫn còn thấp.
 - Đề xuất tạo test tối thiểu cho các trang/flow trọng điểm (phần 6).
 
 ---
@@ -391,7 +511,7 @@
   - `create-issue-on-failure` (job legacy)
 - Script chạy test và flag:
   - Trước khi siết: `npm test -- --coverage --watchAll=false --passWithNoTests` (flag này làm CI “xanh” dù không có test)
-  - Sau khi siết: bỏ `--passWithNoTests` để **fail khi “No tests found”** (vì `eCommerce_Reactjs/src/**/*.{test,spec}.js` hiện **KHÔNG TỒN TẠI**)
+  - Sau khi siết: bỏ `--passWithNoTests` để **fail khi “No tests found”**; hiện đã có `eCommerce_Reactjs/src/App.test.js` nên CI chạy test thật.
 
 ### 8.2) Các thay đổi CI đã áp dụng để “fail thật + báo lỗi thật”
 
@@ -549,7 +669,7 @@ V-Model ánh xạ các pha phát triển (Requirements → Design → Implementa
 | System Design         | `CHUONG3.md`, `CHUONG4.md`                                                                                                          | CI workflows: `.github/workflows/backend-ci.yml`, `.github/workflows/frontend-ci.yml`        | Present                                     |
 | Architecture          | Docker compose: `docker-compose.yml`; backend structure `ecomAPI/src/{controllers,services,models}`                                 | Integration tests (MySQL): `ecomAPI/tests/integration/*.mysql.int.test.js`                   | Present                                     |
 | Module Design         | Backend module split theo service/controller; ví dụ stock/size trong `ecomAPI/src/services/shopCartService.js`, `productService.js` | Unit tests: `ecomAPI/tests/unit/*.test.js`                                                   | Present                                     |
-| Implementation        | `ecomAPI/src/*`, `eCommerce_Reactjs/src/*`                                                                                          | Frontend unit tests trong source: `eCommerce_Reactjs/src/**/*.{test,spec}.js`                | Missing                                     |
+| Implementation        | `ecomAPI/src/*`, `eCommerce_Reactjs/src/*`                                                                                          | Frontend unit tests trong source: `eCommerce_Reactjs/src/App.test.js`                        | Present                                     |
 | System Test (E2E)     | Cypress spec: `eCommerce_Reactjs/cypress/e2e/homepage.cy.js`                                                                        | Cypress runner/config/deps                                                                   | Missing (Cypress config/deps KHÔNG TỒN TẠI) |
 | Acceptance Test (UAT) | UAT sign-off doc                                                                                                                    | (Không có artefact UAT)                                                                      | Missing                                     |
 
@@ -558,7 +678,7 @@ V-Model ánh xạ các pha phát triển (Requirements → Design → Implementa
 - Backend Unit: `ecomAPI/tests/unit/authService.test.js`, `productService.test.js`, `orderService.test.js`.
 - Backend Integration (MySQL thật): `ecomAPI/tests/integration/auth.mysql.int.test.js`, `product.detail.mysql.int.test.js`, `shopcart.mysql.int.test.js`, ...
 - Backend API-Contract/Smoke: `ecomAPI/tests/api/app.smoke.test.js`, `authz.contract.test.js`, `product.contract.test.js`, ...
-- Frontend Unit: **MISSING** (không có file test trong `eCommerce_Reactjs/src`).
+- Frontend Unit (smoke): `eCommerce_Reactjs/src/App.test.js`.
 - E2E: có spec nhưng runner/config **MISSING**.
 
 ---
@@ -579,7 +699,7 @@ Ghi chú: ktpm hiện không có requirement IDs chuẩn hoá trong repo, nên t
 | REQ-ORDER-01   | Tạo đơn hàng             | `ecomAPI/tests/api/cart-order-voucher.contract.test.js` (TC60/TC61)                                                                            | Backend CI/CD → job `test`                            |
 | REQ-VOUCHER-01 | Lấy/claim voucher        | `ecomAPI/tests/api/cart-order-voucher.contract.test.js` (TC75–TC78)                                                                            | Backend CI/CD → job `test`                            |
 | REQ-ADMIN-01   | Admin xem danh sách user | `ecomAPI/tests/integration/user.admin.mysql.int.test.js` (DB-ADMIN-01/02) + `ecomAPI/tests/api/authz.roles.contract.test.js` (TC38/TC39)       | Backend CI/CD → job `test`                            |
-| REQ-FE-01      | Frontend có unit tests   | `eCommerce_Reactjs/src/**/*.{test,spec}.js`                                                                                                    | Frontend CI/CD → job `test` (hiện sẽ FAIL do Missing) |
+| REQ-FE-01      | Frontend có unit tests   | `eCommerce_Reactjs/src/App.test.js`                                                                                                            | Frontend CI/CD → job `test`                            |
 
 ### 12.2) Artefact tham chiếu đã “mang về” từ repo điểm cao
 

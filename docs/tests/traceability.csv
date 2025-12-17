@@ -1,0 +1,10 @@
+requirement_id,ci_workflow,ci_job,notes
+REQ-AUTH-01,.github/workflows/backend-ci.yml,test,Executed via npm run test:unit + test:integration
+REQ-AUTH-02,.github/workflows/backend-ci.yml,test,Executed via npm run test:unit + test:integration
+REQ-PROD-01,.github/workflows/backend-ci.yml,test,DB-real tests exist but test:db is not in CI
+REQ-PROD-02,.github/workflows/backend-ci.yml,test,DB-real tests exist but test:db is not in CI
+REQ-CART-01,.github/workflows/backend-ci.yml,test,Stock checks exist in service; add more tests later
+REQ-ORDER-01,.github/workflows/backend-ci.yml,test,Some contract cases are pending in jest-results.json
+REQ-VOUCHER-01,.github/workflows/backend-ci.yml,test,
+REQ-ADMIN-01,.github/workflows/backend-ci.yml,test,
+REQ-FE-01,.github/workflows/frontend-ci.yml,test,Currently fails because frontend test files are missing

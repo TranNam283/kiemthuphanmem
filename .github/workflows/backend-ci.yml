@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   test:
     name: Test Backend
@@ -46,20 +51,207 @@ jobs:
 
       - name: Run unit tests
         working-directory: ./ecomAPI
-        run: npm run test:unit
+        run: |
+          set -o pipefail
+          npm run test:unit -- --json --outputFile=ci-jest-unit.json 2>&1 | tee ci-backend-unit.log
         env:
           NODE_ENV: test
           JWT_SECRET: test_secret_key
 
       - name: Run integration tests (no coverage)
         working-directory: ./ecomAPI
-        run: npm run test:integration -- --no-coverage
+        run: |
+          set -o pipefail
+          npm run test:integration -- --no-coverage --json --outputFile=ci-jest-integration.json 2>&1 | tee ci-backend-integration.log
         env:
           NODE_ENV: test
           DB_HOST: 127.0.0.1
           DB_USER: root
           DB_PASS: rootpassword
           DB_NAME: ecom_test
+
+      - name: Run DB-real tests (MySQL)
+        working-directory: ./ecomAPI
+        run: |
+          set -o pipefail
+          npm run test:db -- --json --outputFile=ci-jest-db.json 2>&1 | tee ci-backend-db.log
+        env:
+          NODE_ENV: test
+          RUN_DB_TESTS: 1
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASS: rootpassword
+          DB_NAME: ecom_test
+
+      - name: Collect short test logs
+        if: failure()
+        working-directory: ./ecomAPI
+        run: |
+          mkdir -p ci-fail-logs
+          LOG_FILE="ci-fail-logs/${GITHUB_JOB}-${GITHUB_RUN_ID}.log"
+          echo "==== BACKEND UNIT TEST OUTPUT (tail 100 lines) ====" > "$LOG_FILE"
+          tail -n 100 ci-backend-unit.log >> "$LOG_FILE" || true
+          echo "" >> "$LOG_FILE"
+          echo "==== BACKEND INTEGRATION TEST OUTPUT (tail 100 lines) ====" >> "$LOG_FILE"
+          tail -n 100 ci-backend-integration.log >> "$LOG_FILE" || true
+          echo "" >> "$LOG_FILE"
+          echo "==== BACKEND DB-REAL TEST OUTPUT (tail 100 lines) ====" >> "$LOG_FILE"
+          tail -n 100 ci-backend-db.log >> "$LOG_FILE" || true
+          cp "$LOG_FILE" ci-fail-logs/unit-test-output.txt
+
+      - name: Upload failure logs artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-fail-logs-backend-${{ github.run_id }}
+          path: |
+            ecomAPI/ci-fail-logs
+            ecomAPI/ci-backend-unit.log
+            ecomAPI/ci-backend-integration.log
+            ecomAPI/ci-backend-db.log
+            ecomAPI/ci-jest-unit.json
+            ecomAPI/ci-jest-integration.json
+            ecomAPI/ci-jest-db.json
+          retention-days: 14
+
+      - name: Create GitHub Issue + comment PR (backend)
+        if: failure()
+        id: create_issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            function safeReadJson(path) {
+              try { return JSON.parse(fs.readFileSync(path, 'utf8')); } catch { return null; }
+            }
+            function safeRead(path) {
+              try { return fs.readFileSync(path, 'utf8'); } catch { return ''; }
+            }
+            function ensureLabel(name, color, description) {
+              return github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name,
+                color,
+                description,
+              }).catch(() => null);
+            }
+            function summarizeJest(json) {
+              if (!json) return { failed: null, total: null, failedNames: [] };
+              const failed = Number(json.numFailedTests ?? 0);
+              const total = Number(json.numTotalTests ?? 0);
+              const failedNames = [];
+              for (const suite of (json.testResults || [])) {
+                for (const t of (suite.assertionResults || [])) {
+                  if (t.status === 'failed') failedNames.push(t.fullName || t.title);
+                }
+              }
+              return { failed, total, failedNames: failedNames.slice(0, 20) };
+            }
+
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const shortLogPath = 'ecomAPI/ci-fail-logs/unit-test-output.txt';
+            const shortLog = safeRead(shortLogPath).slice(0, 60000);
+            const unitJson = safeReadJson('ecomAPI/ci-jest-unit.json');
+            const intJson = safeReadJson('ecomAPI/ci-jest-integration.json');
+            const dbJson = safeReadJson('ecomAPI/ci-jest-db.json');
+            const unit = summarizeJest(unitJson);
+            const integ = summarizeJest(intJson);
+            const db = summarizeJest(dbJson);
+            const failed = (unit.failed ?? 0) + (integ.failed ?? 0) + (db.failed ?? 0);
+            const total = (unit.total ?? 0) + (integ.total ?? 0) + (db.total ?? 0);
+            const failedPct = total ? (failed / total) : null;
+            const severity = (failedPct !== null && failedPct > 0.5) ? 'severity:high' : 'severity:medium';
+
+            await ensureLabel('ci/failure', 'b60205', 'Automated CI failure');
+            await ensureLabel('triage-needed', 'd4c5f9', 'Needs triage/owner assignment');
+            await ensureLabel('severity:high', 'b60205', 'High severity CI failure');
+            await ensureLabel('severity:medium', 'fbca04', 'Medium severity CI failure');
+
+            const job = process.env.GITHUB_JOB;
+            const workflow = process.env.GITHUB_WORKFLOW;
+            const sha = context.sha;
+            const prNumber = context.payload.pull_request?.number;
+
+            const title = `[CI FAIL] ${workflow} - ${job} - backend tests failed`;
+            const body = [
+              `**Repository:** ${context.repo.owner}/${context.repo.repo}`,
+              `**Workflow:** ${workflow}`,
+              `**Job:** ${job}`,
+              `**Failing step(s):** Run unit tests; Run integration tests (no coverage); Run DB-real tests (MySQL)`,
+              `**Commit:** ${sha}`,
+              `**PR:** ${prNumber ?? 'N/A'}`,
+              `**Run URL:** ${runUrl}`,
+              `**Artifact:** ci-fail-logs-backend-${context.runId}`,
+              `**Failing tests:** ${total ? `${failed}/${total}` : 'UNKNOWN'}`,
+              '',
+              unit.failedNames.length ? `**Failed (unit) sample:**\n- ${unit.failedNames.join('\n- ')}` : '**Failed (unit) sample:** (none captured)',
+              '',
+              integ.failedNames.length ? `**Failed (integration) sample:**\n- ${integ.failedNames.join('\n- ')}` : '**Failed (integration) sample:** (none captured)',
+              '',
+              db.failedNames.length ? `**Failed (db-real) sample:**\n- ${db.failedNames.join('\n- ')}` : '**Failed (db-real) sample:** (none captured)',
+              '',
+              '**Short logs (tail 100):**',
+              '```',
+              shortLog || '(no logs captured)',
+              '```',
+              '',
+              '**Suggested owner(s):** triage-needed (CODEOWNERS KHÔNG TỒN TẠI)',
+            ].join('\n');
+
+            let issue;
+            try {
+              issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['ci/failure', severity, 'triage-needed'],
+              });
+            } catch (err) {
+              const ts = new Date().toISOString();
+              const fallbackPath = 'docs/CI_FAILURES.md';
+              const entry = [
+                `## ${ts} — ${title}`,
+                `- Run URL: ${runUrl}`,
+                `- Commit: ${sha}`,
+                `- Job: ${job}`,
+                `- Reason: failed to create issue via API: ${String(err).slice(0, 500)}`,
+                '',
+                '```',
+                shortLog || '(no logs captured)',
+                '```',
+                '',
+              ].join('\n');
+              fs.mkdirSync('docs', { recursive: true });
+              fs.appendFileSync(fallbackPath, entry);
+              throw new Error(`Issue creation failed; wrote fallback to ${fallbackPath}. ${String(err).slice(0, 300)}`);
+            }
+
+            const pr = context.payload.pull_request;
+            if (pr?.number) {
+              const commentBody = `CI failed in **${workflow}/${job}**. Opened issue #${issue.data.number}: ${issue.data.html_url}\n\nPlease fix failing tests or add label wontfix.`;
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: commentBody,
+              });
+            }
+
+      - name: Fallback PR with CI_FAILURES.md
+        if: failure() && steps.create_issue.outcome == 'failure'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "docs(ci): add CI failure log (backend)"
+          branch: "ci/failure-backend-${{ github.run_id }}"
+          title: "[CI FAIL][backend] Save logs to docs/CI_FAILURES.md"
+          body: |
+            CI could not create an Issue (permissions/labels). This PR stores failure context in `docs/CI_FAILURES.md`.
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          add-paths: |
+            docs/CI_FAILURES.md
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
@@ -136,7 +328,7 @@ jobs:
     name: Create Issue if Tests Failed
     runs-on: ubuntu-latest
     needs: test
-    if: failure()
+    if: false
     permissions:
       issues: write
       contents: read

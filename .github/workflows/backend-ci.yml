@@ -70,6 +70,19 @@ jobs:
           DB_PASS: rootpassword
           DB_NAME: ecom_test
 
+      - name: Run DB-real tests (MySQL)
+        working-directory: ./ecomAPI
+        run: |
+          set -o pipefail
+          npm run test:db -- --json --outputFile=ci-jest-db.json 2>&1 | tee ci-backend-db.log
+        env:
+          NODE_ENV: test
+          RUN_DB_TESTS: 1
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASS: rootpassword
+          DB_NAME: ecom_test
+
       - name: Collect short test logs
         if: failure()
         working-directory: ./ecomAPI
@@ -81,6 +94,9 @@ jobs:
           echo "" >> "$LOG_FILE"
           echo "==== BACKEND INTEGRATION TEST OUTPUT (tail 100 lines) ====" >> "$LOG_FILE"
           tail -n 100 ci-backend-integration.log >> "$LOG_FILE" || true
+          echo "" >> "$LOG_FILE"
+          echo "==== BACKEND DB-REAL TEST OUTPUT (tail 100 lines) ====" >> "$LOG_FILE"
+          tail -n 100 ci-backend-db.log >> "$LOG_FILE" || true
           cp "$LOG_FILE" ci-fail-logs/unit-test-output.txt
 
       - name: Upload failure logs artifact
@@ -92,8 +108,10 @@ jobs:
             ecomAPI/ci-fail-logs
             ecomAPI/ci-backend-unit.log
             ecomAPI/ci-backend-integration.log
+            ecomAPI/ci-backend-db.log
             ecomAPI/ci-jest-unit.json
             ecomAPI/ci-jest-integration.json
+            ecomAPI/ci-jest-db.json
           retention-days: 14
 
       - name: Create GitHub Issue + comment PR (backend)
@@ -137,10 +155,12 @@ jobs:
             const shortLog = safeRead(shortLogPath).slice(0, 60000);
             const unitJson = safeReadJson('ecomAPI/ci-jest-unit.json');
             const intJson = safeReadJson('ecomAPI/ci-jest-integration.json');
+            const dbJson = safeReadJson('ecomAPI/ci-jest-db.json');
             const unit = summarizeJest(unitJson);
             const integ = summarizeJest(intJson);
-            const failed = (unit.failed ?? 0) + (integ.failed ?? 0);
-            const total = (unit.total ?? 0) + (integ.total ?? 0);
+            const db = summarizeJest(dbJson);
+            const failed = (unit.failed ?? 0) + (integ.failed ?? 0) + (db.failed ?? 0);
+            const total = (unit.total ?? 0) + (integ.total ?? 0) + (db.total ?? 0);
             const failedPct = total ? (failed / total) : null;
             const severity = (failedPct !== null && failedPct > 0.5) ? 'severity:high' : 'severity:medium';
 
@@ -159,7 +179,7 @@ jobs:
               `**Repository:** ${context.repo.owner}/${context.repo.repo}`,
               `**Workflow:** ${workflow}`,
               `**Job:** ${job}`,
-              `**Failing step(s):** Run unit tests; Run integration tests (no coverage)`,
+              `**Failing step(s):** Run unit tests; Run integration tests (no coverage); Run DB-real tests (MySQL)`,
               `**Commit:** ${sha}`,
               `**PR:** ${prNumber ?? 'N/A'}`,
               `**Run URL:** ${runUrl}`,
@@ -169,6 +189,8 @@ jobs:
               unit.failedNames.length ? `**Failed (unit) sample:**\n- ${unit.failedNames.join('\n- ')}` : '**Failed (unit) sample:** (none captured)',
               '',
               integ.failedNames.length ? `**Failed (integration) sample:**\n- ${integ.failedNames.join('\n- ')}` : '**Failed (integration) sample:** (none captured)',
+              '',
+              db.failedNames.length ? `**Failed (db-real) sample:**\n- ${db.failedNames.join('\n- ')}` : '**Failed (db-real) sample:** (none captured)',
               '',
               '**Short logs (tail 100):**',
               '```',

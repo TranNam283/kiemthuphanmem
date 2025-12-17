@@ -12,6 +12,7 @@
 - **Traceability dạng file**: tạo `docs/tests/test-cases.csv` và `docs/tests/traceability.csv` để map requirement → test → CI job.
 
 Các file/workflow liên quan (đều tồn tại trong repo ktpm):
+
 - Workflows: `.github/workflows/backend-ci.yml`, `.github/workflows/frontend-ci.yml`
 - Fallback logs: `docs/CI_FAILURES.md`
 - Docs tham chiếu: `docs/reference-tests/`
@@ -20,8 +21,8 @@ Các file/workflow liên quan (đều tồn tại trong repo ktpm):
 
 ### 0.2) Bước tiếp theo (ưu tiên)
 
-1) Hoàn thiện nội dung **CI strict rationale (C)** + **Agile analysis (D)** + **V-Model mapping & verification list (E)** ngay trong file này để giảng viên đọc một lần là thấy đủ bằng chứng.
-2) (Tuỳ chọn) Tách job `test:db` (MySQL real) ra CI job riêng để tăng độ tin cậy regression (hiện tại job này **KHÔNG TỒN TẠI** trong workflow).
+1. Hoàn thiện nội dung **CI strict rationale (C)** + **Agile analysis (D)** + **V-Model mapping & verification list (E)** ngay trong file này để giảng viên đọc một lần là thấy đủ bằng chứng.
+2. (Tuỳ chọn) Tách job `test:db` (MySQL real) ra job riêng để tăng độ tin cậy regression (hiện tại đang chạy chung trong job backend `test`).
 
 ---
 
@@ -76,21 +77,21 @@ V-Model mapping kỳ vọng:
 
 ### 11.2) Mapping phase → artefact → verification (ktpm)
 
-| Phase (V-Model) | Artefact tương ứng trong ktpm | Verification hiện có | Status |
-|---|---|---|---|
-| Requirements | `README.md`, `docs/PHU_LUC_A_TEST_CASES.md` | Acceptance/System test: **MISSING** | Missing |
-| System design | `docker-compose.yml` (hệ thống gồm mysql/backend/frontend) | System test tự động: **MISSING** | Missing |
-| Architecture | `ecomAPI/src` (services/controllers/models) | Integration tests: `ecomAPI/tests/integration/*.mysql.int.test.js` | Present |
-| Module design | `ecomAPI/src/utils/*Utils.js` | Unit tests: `ecomAPI/tests/unit/*.test.js` | Present |
-| Implementation | `eCommerce_Reactjs/src` + `ecomAPI/src` | Frontend unit tests: `eCommerce_Reactjs/src/App.test.js` | Present |
-| API contract (bổ sung) | Routes/Controllers (backend) | API contract/smoke: `ecomAPI/tests/api/*.test.js` | Present |
-| E2E (bổ sung) | UI flow end-to-end | `eCommerce_Reactjs/cypress/e2e/homepage.cy.js` (spec) nhưng Cypress config/deps: **MISSING** | Missing |
-| Performance (bổ sung) | Non-functional | `performance/k6/*` (đã copy từ repo tham chiếu) | Present |
+| Phase (V-Model)        | Artefact tương ứng trong ktpm                              | Verification hiện có                                                                         | Status  |
+| ---------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------- |
+| Requirements           | `README.md`, `docs/PHU_LUC_A_TEST_CASES.md`                | Acceptance/System test: **MISSING**                                                          | Missing |
+| System design          | `docker-compose.yml` (hệ thống gồm mysql/backend/frontend) | System test tự động: **MISSING**                                                             | Missing |
+| Architecture           | `ecomAPI/src` (services/controllers/models)                | Integration tests: `ecomAPI/tests/integration/*.mysql.int.test.js`                           | Present |
+| Module design          | `ecomAPI/src/utils/*Utils.js`                              | Unit tests: `ecomAPI/tests/unit/*.test.js`                                                   | Present |
+| Implementation         | `eCommerce_Reactjs/src` + `ecomAPI/src`                    | Frontend unit tests: `eCommerce_Reactjs/src/App.test.js`                                     | Present |
+| API contract (bổ sung) | Routes/Controllers (backend)                               | API contract/smoke: `ecomAPI/tests/api/*.test.js`                                            | Present |
+| E2E (bổ sung)          | UI flow end-to-end                                         | `eCommerce_Reactjs/cypress/e2e/homepage.cy.js` (spec) nhưng Cypress config/deps: **MISSING** | Missing |
+| Performance (bổ sung)  | Non-functional                                             | `performance/k6/*` (đã copy từ repo tham chiếu)                                              | Present |
 
 ### 11.3) Verification checklist (đọc nhanh)
 
 - [Present] Backend Unit: `ecomAPI/tests/unit/*.test.js` (CI: `.github/workflows/backend-ci.yml` job `test`)
-- [Present] Backend Integration: `ecomAPI/tests/integration/*.mysql.int.test.js` (CI: **MISSING job** chạy `npm run test:db`)
+- [Present] Backend Integration (DB-real): `ecomAPI/tests/integration/*.mysql.int.test.js` (CI: `.github/workflows/backend-ci.yml` chạy `npm run test:db`)
 - [Present] Backend API contract/smoke: `ecomAPI/tests/api/*.test.js`
 - [Present] Frontend Unit (smoke): `eCommerce_Reactjs/src/App.test.js`
 - [Missing] E2E runnable: `eCommerce_Reactjs/cypress/e2e/*` có spec nhưng thiếu `cypress` dependency + `cypress.config.*`
@@ -118,7 +119,6 @@ Repo ktpm hiện **KHÔNG TỒN TẠI** file định nghĩa Requirement IDs riê
 
 - `docs/tests/test-cases.csv`: map requirement → test case name → source file.
 - `docs/tests/traceability.csv`: map requirement → CI workflow/job.
-
 
 ## 1) Yêu cầu bài làm
 
@@ -272,6 +272,7 @@ Repo ktpm hiện **KHÔNG TỒN TẠI** file định nghĩa Requirement IDs riê
 
 - Backend workflow: `.github/workflows/backend-ci.yml`
   - Có MySQL service (`mysql:8.0`) và chạy `npm run test:unit`, `npm run test:integration`
+  - Có chạy DB-real: `npm run test:db`
   - Có job `security-scan` chạy `npm audit`
 - Frontend workflow: `.github/workflows/frontend-ci.yml`
   - Chạy `npm test -- --coverage --watchAll=false` (không `--passWithNoTests`)
@@ -357,9 +358,10 @@ Repo ktpm hiện **KHÔNG TỒN TẠI** file định nghĩa Requirement IDs riê
 - Mở rộng phạm vi collect coverage:
   - Hiện tại `ecomAPI/jest.config.js` chỉ cover 3 file util.
   - Đề xuất bổ sung (hiện tại KHÔNG TỒN TẠI trong config): thêm `src/services/**/*.js` và `src/controllers/**/*.js` vào `collectCoverageFrom`.
-- Tách “DB-real tests” ra pipeline riêng:
+- DB-real tests trong CI:
   - Hiện có `test:db` và các file `*.mysql.int.test.js`.
-  - Đề xuất: job CI riêng chạy `test:db` theo lịch/nhánh (hiện tại KHÔNG TỒN TẠI trong `.github/workflows/backend-ci.yml`).
+  - CI hiện đã chạy `npm run test:db` trong `.github/workflows/backend-ci.yml` (cùng job backend `test`).
+  - (Tuỳ chọn) Tách riêng thành job `db-tests` theo lịch/nhánh để giảm thời gian CI cho PR nhỏ.
 - Chuẩn hóa naming/nhóm test để dễ đọc báo cáo:
   - Hiện đang trộn `orderService.test.js` trong `tests/integration/` và `tests/unit/`.
 
@@ -452,7 +454,7 @@ Repo ktpm hiện **KHÔNG TỒN TẠI** file định nghĩa Requirement IDs riê
 ### 7.2) Checklist hoàn thành
 
 - CI backend chạy ổn định unit + integration (đã có).
-- Có job DB-real chạy `test:db` theo kế hoạch (hiện tại KHÔNG TỒN TẠI trong workflow).
+- Có job chạy DB-real `test:db` (đã có trong `.github/workflows/backend-ci.yml`).
 - Cypress chạy được bằng script và có config (hiện tại KHÔNG TỒN TẠI).
 - Frontend có test file thật (hiện tại KHÔNG TỒN TẠI).
 
@@ -689,17 +691,17 @@ V-Model ánh xạ các pha phát triển (Requirements → Design → Implementa
 
 Ghi chú: ktpm hiện không có requirement IDs chuẩn hoá trong repo, nên tạo tối thiểu các mã REQ để phục vụ traceability.
 
-| Requirement ID | Mô tả                    | Test case / file chứng minh                                                                                                                    | CI job                                                |
-| -------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| REQ-AUTH-01    | Đăng ký tài khoản        | `ecomAPI/tests/integration/auth.mysql.int.test.js` (TC28, TC29)                                                                                | Backend CI/CD → job `test`                            |
-| REQ-AUTH-02    | Đăng nhập                | `ecomAPI/tests/integration/auth.mysql.int.test.js` (TC32, TC33)                                                                                | Backend CI/CD → job `test`                            |
-| REQ-PROD-01    | Xem danh sách sản phẩm   | `ecomAPI/tests/integration/product.mysql.int.test.js` (DB-PRODUCT-01) + `ecomAPI/tests/api/product.contract.test.js` (TC40)                    | Backend CI/CD → job `test`                            |
-| REQ-PROD-02    | Xem chi tiết sản phẩm    | `ecomAPI/tests/integration/product.detail.mysql.int.test.js` (DB-PRODUCT-DETAIL-01) + `ecomAPI/tests/api/product.contract.test.js` (TC41/TC42) | Backend CI/CD → job `test`                            |
-| REQ-CART-01    | Thêm giỏ theo size       | `ecomAPI/tests/integration/shopcart.mysql.int.test.js` (DB-SHOPCART-01)                                                                        | Backend CI/CD → job `test`                            |
-| REQ-ORDER-01   | Tạo đơn hàng             | `ecomAPI/tests/api/cart-order-voucher.contract.test.js` (TC60/TC61)                                                                            | Backend CI/CD → job `test`                            |
-| REQ-VOUCHER-01 | Lấy/claim voucher        | `ecomAPI/tests/api/cart-order-voucher.contract.test.js` (TC75–TC78)                                                                            | Backend CI/CD → job `test`                            |
-| REQ-ADMIN-01   | Admin xem danh sách user | `ecomAPI/tests/integration/user.admin.mysql.int.test.js` (DB-ADMIN-01/02) + `ecomAPI/tests/api/authz.roles.contract.test.js` (TC38/TC39)       | Backend CI/CD → job `test`                            |
-| REQ-FE-01      | Frontend có unit tests   | `eCommerce_Reactjs/src/App.test.js`                                                                                                            | Frontend CI/CD → job `test`                            |
+| Requirement ID | Mô tả                    | Test case / file chứng minh                                                                                                                    | CI job                      |
+| -------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| REQ-AUTH-01    | Đăng ký tài khoản        | `ecomAPI/tests/integration/auth.mysql.int.test.js` (TC28, TC29)                                                                                | Backend CI/CD → job `test`  |
+| REQ-AUTH-02    | Đăng nhập                | `ecomAPI/tests/integration/auth.mysql.int.test.js` (TC32, TC33)                                                                                | Backend CI/CD → job `test`  |
+| REQ-PROD-01    | Xem danh sách sản phẩm   | `ecomAPI/tests/integration/product.mysql.int.test.js` (DB-PRODUCT-01) + `ecomAPI/tests/api/product.contract.test.js` (TC40)                    | Backend CI/CD → job `test`  |
+| REQ-PROD-02    | Xem chi tiết sản phẩm    | `ecomAPI/tests/integration/product.detail.mysql.int.test.js` (DB-PRODUCT-DETAIL-01) + `ecomAPI/tests/api/product.contract.test.js` (TC41/TC42) | Backend CI/CD → job `test`  |
+| REQ-CART-01    | Thêm giỏ theo size       | `ecomAPI/tests/integration/shopcart.mysql.int.test.js` (DB-SHOPCART-01)                                                                        | Backend CI/CD → job `test`  |
+| REQ-ORDER-01   | Tạo đơn hàng             | `ecomAPI/tests/api/cart-order-voucher.contract.test.js` (TC60/TC61)                                                                            | Backend CI/CD → job `test`  |
+| REQ-VOUCHER-01 | Lấy/claim voucher        | `ecomAPI/tests/api/cart-order-voucher.contract.test.js` (TC75–TC78)                                                                            | Backend CI/CD → job `test`  |
+| REQ-ADMIN-01   | Admin xem danh sách user | `ecomAPI/tests/integration/user.admin.mysql.int.test.js` (DB-ADMIN-01/02) + `ecomAPI/tests/api/authz.roles.contract.test.js` (TC38/TC39)       | Backend CI/CD → job `test`  |
+| REQ-FE-01      | Frontend có unit tests   | `eCommerce_Reactjs/src/App.test.js`                                                                                                            | Frontend CI/CD → job `test` |
 
 ### 12.2) Artefact tham chiếu đã “mang về” từ repo điểm cao
 

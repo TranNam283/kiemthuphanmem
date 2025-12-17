@@ -95,6 +95,7 @@ jobs:
             const job = process.env.GITHUB_JOB;
             const workflow = process.env.GITHUB_WORKFLOW;
             const sha = context.sha;
+            const prNumber = context.payload.pull_request?.number;
 
             // Determine severity based on heuristic from log summary.
             const logLine = shortLog.split('\n').find(l => l.startsWith('Tests:')) || '';
@@ -115,7 +116,9 @@ jobs:
               `**Repository:** ${context.repo.owner}/${context.repo.repo}`,
               `**Workflow:** ${workflow}`,
               `**Job:** ${job}`,
+              `**Failing step:** Run unit tests` ,
               `**Commit:** ${sha}`,
+              `**PR:** ${prNumber ?? 'N/A'}`,
               `**Run URL:** ${runUrl}`,
               `**Artifact:** ci-fail-logs-frontend-${context.runId}`,
               `**Failing tests (heuristic):** ${failed !== null ? failed : 'UNKNOWN'} / ${total !== null ? total : 'UNKNOWN'}`,

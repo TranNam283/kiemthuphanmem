@@ -152,13 +152,16 @@ jobs:
             const job = process.env.GITHUB_JOB;
             const workflow = process.env.GITHUB_WORKFLOW;
             const sha = context.sha;
+            const prNumber = context.payload.pull_request?.number;
 
             const title = `[CI FAIL] ${workflow} - ${job} - backend tests failed`;
             const body = [
               `**Repository:** ${context.repo.owner}/${context.repo.repo}`,
               `**Workflow:** ${workflow}`,
               `**Job:** ${job}`,
+              `**Failing step(s):** Run unit tests; Run integration tests (no coverage)`,
               `**Commit:** ${sha}`,
+              `**PR:** ${prNumber ?? 'N/A'}`,
               `**Run URL:** ${runUrl}`,
               `**Artifact:** ci-fail-logs-backend-${context.runId}`,
               `**Failing tests:** ${total ? `${failed}/${total}` : 'UNKNOWN'}`,

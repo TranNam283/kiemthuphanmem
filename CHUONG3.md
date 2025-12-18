@@ -27,6 +27,30 @@ Hệ thống là website thương mại điện tử gồm:
 - **Triển khai cục bộ** khuyến nghị bằng Docker Compose (`docker-compose.yml`).
 - **Tự động hóa** bằng GitHub Actions workflows trong `.github/workflows/`.
 
+### 3.2.1. Khung Test Plan tham khảo từ repo “điểm cao” (chỉ dùng làm template)
+
+Repo tham chiếu có một file **Test Plan** dạng Word (Office) với cấu trúc chuẩn kiểu “đồ án điểm cao”. Nhóm **không copy nội dung** để nộp, mà chỉ tham khảo **khung mục** để đảm bảo Chương 3 đầy đủ.
+
+Khung mục (rút gọn) mà template đó thể hiện:
+
+- Giới thiệu (mục đích, phiên bản/tài liệu liên quan, rủi ro)
+- Hạng mục **được kiểm thử**: chức năng, usability, compatibility, UI, security, database, performance/load, regression, API
+- Hạng mục **không được kiểm thử**: bên thứ ba, bảo mật nâng cao, usability chuyên sâu…
+- Tiêu chí chấp nhận/tiêu chí “đạt kiểm thử” (coverage, pass-rate, số lỗi, CI/CD…)
+- Phương pháp, loại test, cấp độ test
+- Nguồn lực & lịch trình
+- Môi trường kiểm thử (phần cứng/phần mềm/hạ tầng)
+
+Chương 3 của KTPM sẽ bám theo các nhóm mục trên, nhưng **viết lại hoàn toàn theo domain KTPM (quần áo)** và dựa trên artefact có thật trong repo.
+
+### 3.2.2. Nguyên tắc “dùng template để làm lại”, không copy để nộp
+
+- Các file Office/template copy về để tham khảo được đặt tại `docs/ref/**` và được kiểm tra provenance bằng `docs/DOCS_PROVENANCE_REPORT.md`.
+- Nội dung “được coi là sản phẩm của KTPM” phải là nội dung nhóm tự viết: Chương 3 này + các artefact ở `docs/tests/**` (CSV/traceability) và các script k6 đã được rewrite theo endpoint KTPM.
+- Với template bị phát hiện giống 100% (COPIED_VERBATIM), repo chỉ giữ **outline hướng dẫn viết lại** tại `docs/adapted/**` (các file `*_REWRITE_NEEDED.md`) để tránh tình trạng “copy rồi thay chữ”.
+
+Minh chứng: `docs/NOTICE_ADAPTATION.md`, `docs/DOCS_PROVENANCE_REPORT.md`.
+
 ---
 
 ## 3.3. Phạm vi kiểm thử (Scope)
@@ -40,9 +64,9 @@ Hệ thống là website thương mại điện tử gồm:
 - Kiểm thử tương tác DB (CRUD, ràng buộc dữ liệu, tính nhất quán).
 - Kiểm thử tích hợp dịch vụ bên ngoài ở mức “không phá môi trường”: mô phỏng/giới hạn (email, payment, shipping webhook).
 
-Ghi chú triển khai: một số bài kiểm thử “DB thật” (MySQL qua Docker) được cấu hình chạy có điều kiện bằng biến môi trường `RUN_DB_TESTS=1` để tránh làm gián đoạn các bài test contract/mocked khi môi trường DB chưa sẵn sàng.
+Ghi chú triển khai: dự án có tách riêng bài kiểm thử DB thật (MySQL) bằng script `npm run test:db` (set `RUN_DB_TESTS=1`) để chạy các file `*.mysql.int.test.js` theo kiểu “DB-real integration”.
 
-Minh chứng chạy DB thật (local): `cd ecomAPI` → `npm run test:db` (yêu cầu MySQL Docker đang chạy). Hiện trạng DB-real: **10 suites – 34 tests – PASS**.
+Minh chứng gần nhất (evidence-based trong repo): file `ecomAPI/jest-results.json` ghi nhận lần chạy thành công với **17 test suites, 116 tests (109 passed, 7 pending)**. (Con số này là snapshot theo file kết quả, không phải cam kết luôn luôn đúng ở mọi thời điểm.)
 
 **B) Frontend (eCommerce_Reactjs)**
 
@@ -50,16 +74,21 @@ Minh chứng chạy DB thật (local): `cd ecomAPI` → `npm run test:db` (yêu 
 - Kiểm thử điều hướng và ràng buộc quyền truy cập (route `/admin`, `/user`).
 - Kiểm thử hiển thị dữ liệu và xử lý lỗi mạng.
 
+Hiện trạng tối thiểu: có test chạy được để chứng minh CI không “pass giả” (smoke) tại `eCommerce_Reactjs/src/App.test.js`.
+
 **C) Hạ tầng / DevOps**
 
 - Docker Compose khởi chạy 3 services (MySQL, backend, frontend) và import dữ liệu.
 - CI/CD: chạy unit/integration tests, build, security scan, artifacts.
+
+Hiện trạng CI: workflows đã cấu hình theo hướng **fail thật + có artifact/log** (xem `.github/workflows/backend-ci.yml`, `.github/workflows/frontend-ci.yml`).
 
 ### 3.3.2. Ngoài phạm vi (Out-of-scope)
 
 - Tính đúng/sai nghiệp vụ và SLA của bên thứ ba (GHN, PayPal, VNPay) trong môi trường production thật.
 - Kiểm thử “giao đơn thật/ thanh toán thật” (chỉ kiểm thử ở mức mock/sandbox).
 - Pen-test chuyên sâu (chỉ thực hiện security checklist + scan cơ bản).
+- E2E runnable ở mức “đầy đủ” (hiện repo có thư mục `eCommerce_Reactjs/cypress/e2e/` nhưng thiếu cấu hình/dependency Cypress để chạy ổn định).
 
 ---
 
@@ -263,13 +292,21 @@ Kế hoạch áp dụng kết hợp các phương pháp/kỹ thuật sau:
 ### 3.8.1. Kiểm thử hiệu suất (Performance)
 
 - Mục tiêu: đo thời gian phản hồi và tỉ lệ lỗi cho endpoint chính.
-- Kịch bản tối thiểu:
-  - Browse products: GET list (N requests/s)
-  - Add to cart: POST add item
-  - Create order: POST create order
-- Công cụ: k6/JMeter (demo) hoặc artillery.
-- Tiêu chí tham khảo (có thể điều chỉnh theo yêu cầu môn):
-  - 95th percentile < 2s cho browse, < 3s cho checkout ở tải nhẹ.
+- Công cụ hiện có trong repo: k6 scripts tại `performance/k6/load-test.js` và `performance/k6/stress-test.js`.
+- Kịch bản tối thiểu (gợi ý theo đúng domain KTPM):
+  - Browse products: GET `/api/get-all-product-user`
+  - Login (tuỳ chọn): POST `/api/login`
+  - Add to cart (tuỳ chọn, cần auth): POST `/api/add-shopcart` với `productdetailsizeId`
+
+Gợi ý cách chạy k6 (local):
+
+- Load: set `BASE_URL`, (tuỳ chọn) `K6_USER_EMAIL`, `K6_USER_PASSWORD`, rồi chạy script load.
+- Stress: chạy script stress để mô phỏng tăng tải theo stages.
+
+Tiêu chí tham khảo (có thể điều chỉnh theo yêu cầu môn):
+
+- Load nhẹ: p(95) < 1200–2000ms cho browse.
+- Stress: tỉ lệ lỗi < 5% và hệ thống hồi phục khi thả tải.
 
 ### 3.8.2. Kiểm thử bảo mật (Security)
 
@@ -392,6 +429,7 @@ Kế hoạch áp dụng kết hợp các phương pháp/kỹ thuật sau:
 
 - Test Plan (Chương 3).
 - Danh sách test cases (phụ lục).
+- Traceability file-based: `docs/tests/test-cases.csv`, `docs/tests/traceability.csv`.
 - Test logs/CI artifacts (coverage report, audit report).
 - Bug reports (GitHub Issues).
 - Báo cáo kết quả (pass/fail, số lượng lỗi, coverage, nhận xét).
@@ -408,10 +446,15 @@ Kế hoạch áp dụng kết hợp các phương pháp/kỹ thuật sau:
 
 ### 3.15.2. Exit
 
-- Unit tests pass.
-- Các luồng E2E ưu tiên High pass.
-- Không còn lỗi severity High.
-- Coverage đạt ngưỡng đặt ra (tối thiểu 80% cho module được chọn).
+- CI pass cho các tầng test đang có (Backend Jest + Frontend smoke).
+- Backend:
+  - Unit/API/Integration tests pass theo pipeline.
+  - DB-real test (`npm run test:db`) pass khi chạy với MySQL Docker (được xem là “gate” mạnh cho regression).
+- Không còn lỗi mức độ High (security/auth/order/cart) ở luồng ưu tiên.
+
+Ghi chú về E2E: vì E2E runnable chưa ổn định (thiếu cấu hình/dependency Cypress), E2E được xem là **mục tiêu nâng cấp**; nếu chưa kịp triển khai, thay thế bằng API contract + manual smoke có checklist.
+
+Coverage: coverage được Jest sinh ra trong CI; ngưỡng coverage (nếu áp dụng) nên đặt theo module trọng yếu thay vì yêu cầu “80% toàn dự án” để phù hợp đồ án.
 
 ---
 
@@ -421,3 +464,18 @@ Kế hoạch áp dụng kết hợp các phương pháp/kỹ thuật sau:
 - Tuần 2: triển khai unit + API tests cho luồng High.
 - Tuần 3: triển khai E2E (smoke) + chạy CI ổn định.
 - Tuần 4: tổng hợp báo cáo, đánh giá chất lượng.
+
+---
+
+## 3.17. Provenance & cam kết học thuật (liên quan việc “tham khảo template”)
+
+Vì dự án có tham khảo bộ template test plan/case/report từ repo tham chiếu, nhóm đã bổ sung cơ chế kiểm tra provenance để tránh việc “copy nguyên văn rồi coi như của mình”:
+
+- Báo cáo similarity: `docs/DOCS_PROVENANCE_REPORT.md` (tự sinh)
+- Policy + phân tách thư mục: `docs/NOTICE_ADAPTATION.md`
+
+Nguyên tắc áp dụng trong đồ án:
+
+- `docs/ref/**` chỉ là **bản tham khảo/đối chiếu**.
+- “Bài nộp” phải là nội dung nhóm tự viết: Chương 3 này + test cases/traceability tự thiết kế theo KTPM + script k6 đã rewrite theo endpoint KTPM.
+- Template nào bị giống 100% sẽ được xử lý theo hướng **viết lại từ đầu** (outline ở `docs/adapted/**`) thay vì chỉnh sửa nhẹ.

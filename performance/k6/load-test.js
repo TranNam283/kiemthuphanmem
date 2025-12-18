@@ -58,9 +58,11 @@ function pickProductDetailSizeId(productsRes) {
 
     const first = data[0];
     const details = first && first.productDetail;
-    const firstDetail = Array.isArray(details) && details.length > 0 ? details[0] : null;
+    const firstDetail =
+      Array.isArray(details) && details.length > 0 ? details[0] : null;
     const sizes = firstDetail && firstDetail.productDetailSize;
-    const firstSize = Array.isArray(sizes) && sizes.length > 0 ? sizes[0] : null;
+    const firstSize =
+      Array.isArray(sizes) && sizes.length > 0 ? sizes[0] : null;
     return firstSize && firstSize.id ? firstSize.id : null;
   } catch (e) {
     return null;
@@ -69,7 +71,9 @@ function pickProductDetailSizeId(productsRes) {
 
 export default function () {
   // Public browsing: product list (includes details + sizes)
-  const productsRes = http.get(`${BASE_URL}/api/get-all-product-user?limit=10&offset=0`);
+  const productsRes = http.get(
+    `${BASE_URL}/api/get-all-product-user?limit=10&offset=0`
+  );
   check(productsRes, {
     "products status 200": (r) => r.status === 200,
   });

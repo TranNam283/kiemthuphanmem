@@ -55,6 +55,22 @@ Mình chốt theo 2 trục (đúng kiểu “đồ án điểm cao”): **(1) ar
 2. **Làm E2E chạy được tối thiểu 1 flow** (chỉ 1 spec) bằng cách cài Cypress + thêm config + script.
 3. **Dùng `docs/reference-tests/` làm template và điền tối thiểu 1 bản “ktpm filled”** (chỉ cần vài trang/mục chính): Test plan + test report (kết quả chạy CI + k6).
 
+### 0.6) Provenance / Academic integrity (cực quan trọng)
+
+Vì trước đó có copy template từ repo tham chiếu về để “giống điểm cao”, nên mình đã bổ sung cơ chế **kiểm tra provenance + chống đạo văn** ngay trong repo:
+
+- Báo cáo kiểm tra similarity (tự sinh): `docs/DOCS_PROVENANCE_REPORT.md`
+- Dữ liệu JSON để máy đọc (tự sinh): `docs/DOCS_PROVENANCE_REPORT.json`
+- Thông báo/ghi nhận nguồn + cách xử lý: `docs/NOTICE_ADAPTATION.md`
+
+**Kết quả hiện tại (tóm tắt):**
+
+- `docs/ref/**` đang chứa **bản copy nguyên gốc** (để đo similarity), và báo cáo hiện flag là `COPIED_VERBATIM` (100%).
+- Với file `COPIED_VERBATIM`, repo chỉ giữ **outline cần viết lại** trong `docs/adapted/**` (các file `*_REWRITE_NEEDED.md`) thay vì coi template copy là “deliverable”.
+- `performance/k6/*` đã có ghi chú provenance và dùng endpoint/domain của KTPM (quần áo). Báo cáo hiện đánh giá `OK_TO_ADAPT`.
+
+**Rationale:** mục tiêu là giữ được “evidence-based artefact” (có template để tham khảo) nhưng vẫn đảm bảo phần nộp/đánh giá là **nội dung tự viết/điền theo KTPM**.
+
 ---
 
 ## 9) WHY: Vì sao CI fail phải tự tạo Issue (C)

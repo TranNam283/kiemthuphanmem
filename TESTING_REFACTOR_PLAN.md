@@ -24,6 +24,53 @@ Các file/workflow liên quan (đều tồn tại trong repo ktpm):
 1. Hoàn thiện nội dung **CI strict rationale (C)** + **Agile analysis (D)** + **V-Model mapping & verification list (E)** ngay trong file này để giảng viên đọc một lần là thấy đủ bằng chứng.
 2. (Tuỳ chọn) Tách job `test:db` (MySQL real) ra job riêng để tăng độ tin cậy regression (hiện tại đang chạy chung trong job backend `test`).
 
+### 0.3) Chốt: “giống thư mục điểm cao” tới mức nào?
+
+Mình chốt theo 2 trục (đúng kiểu “đồ án điểm cao”): **(1) artefact tài liệu/test design dạng file**, và **(2) kiểm thử tự động + CI**.
+
+| Mảng                     | KTPM hiện có gì                                                                                                                                    | Mức độ “giống” repo điểm cao                | Ghi chú evidence-based                                                                                         |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Test docs (Word/Excel)   | `docs/reference-tests/` có `test plan.docx`, `test report.xlsx`, `Test_Scenario.xlsx`, thư mục `TestDesign/`, `TestReviewChecklist/`, `test case/` | **Tương đương cao (về hình thức artefact)** | Đây là bộ template/artefact copy từ repo tham chiếu, dùng làm “bằng chứng dạng file” rất giống dự án điểm cao. |
+| Performance              | `performance/k6/load-test.js`, `performance/k6/stress-test.js`, `performance/k6/hướng dẫn.txt`                                                     | **Tương đương cao (về artefact)**           | Đã có k6 scripts trong repo ktpm.                                                                              |
+| CI strict + triage       | `.github/workflows/backend-ci.yml`, `.github/workflows/frontend-ci.yml`: bỏ `--passWithNoTests`, upload logs, auto-create Issue + comment PR       | **Tương đương trung bình**                  | Có cơ chế “fail thật + báo lỗi thật” (điểm cộng lớn).                                                          |
+| Backend automated tests  | `ecomAPI/tests/unit/*`, `ecomAPI/tests/api/*`, `ecomAPI/tests/integration/*.mysql.int.test.js` và CI chạy cả `npm run test:db`                     | **Tương đương trung bình**                  | Có đủ tầng unit/contract/integration DB-real; chưa có system/acceptance artefact.                              |
+| Frontend automated tests | `eCommerce_Reactjs/src/App.test.js` (smoke)                                                                                                        | **Tương đương thấp (mới mức tối thiểu)**    | Có test chạy thật nhưng coverage hành vi còn ít.                                                               |
+| E2E runnable             | Có spec `eCommerce_Reactjs/cypress/e2e/homepage.cy.js` nhưng Cypress config/deps: **KHÔNG TỒN TẠI**                                                | **Chưa tương đương**                        | Thiếu `cypress` dependency + `cypress.config.*`.                                                               |
+| Process/governance       | `CODEOWNERS`, `.github/ISSUE_TEMPLATE/*`: **KHÔNG TỒN TẠI**                                                                                        | **Chưa tương đương**                        | Repo tham chiếu thường có quy trình PR/artefact kỷ luật hơn.                                                   |
+
+**Kết luận ngắn:** ktpm đã “giống” repo điểm cao rõ nhất ở **artefact tài liệu test (Word/Excel) + performance (k6)** và **CI fail/triage**; còn **frontend tests** và **E2E runnable** thì chưa.
+
+### 0.4) Giải thích: “làm nhiều test thì phải làm nhiều test design” có đúng không?
+
+- **Đúng một phần**: càng nhiều scope/flow/rủi ro thì cần **thiết kế test** nhiều hơn để tránh test chồng chéo/thiếu traceability.
+- **Nhưng không phải cứ nhiều test là phải viết tài liệu dài**: nếu chỉ thêm vài test regression nhỏ, có thể chỉ cần cập nhật **test case list + traceability + báo cáo kết quả**.
+- Với đồ án “không cần nhiều”: mức tối thiểu giống dự án điểm cao là **có Test Plan, Test Scenario/Test Case, Traceability, Test Report** (ktpm đã có template và CSV), và **CI chạy được một số test tự động có ý nghĩa**.
+
+### 0.5) Hướng đi tiếp theo để “tương đương” mà không làm quá nhiều
+
+1. **Giữ số lượng test vừa phải nhưng tăng chất lượng chứng minh**:
+
+- Thêm 2–3 frontend tests theo hành vi người dùng (list sản phẩm, add-to-cart theo size, xử lý hết hàng) để nâng “maturity” mà không phình.
+
+2. **Làm E2E chạy được tối thiểu 1 flow** (chỉ 1 spec) bằng cách cài Cypress + thêm config + script.
+3. **Dùng `docs/reference-tests/` làm template và điền tối thiểu 1 bản “ktpm filled”** (chỉ cần vài trang/mục chính): Test plan + test report (kết quả chạy CI + k6).
+
+### 0.6) Provenance / Academic integrity (cực quan trọng)
+
+Vì trước đó có copy template từ repo tham chiếu về để “giống điểm cao”, nên mình đã bổ sung cơ chế **kiểm tra provenance + chống đạo văn** ngay trong repo:
+
+- Báo cáo kiểm tra similarity (tự sinh): `docs/DOCS_PROVENANCE_REPORT.md`
+- Dữ liệu JSON để máy đọc (tự sinh): `docs/DOCS_PROVENANCE_REPORT.json`
+- Thông báo/ghi nhận nguồn + cách xử lý: `docs/NOTICE_ADAPTATION.md`
+
+**Kết quả hiện tại (tóm tắt):**
+
+- `docs/ref/**` đang chứa **bản copy nguyên gốc** (để đo similarity), và báo cáo hiện flag là `COPIED_VERBATIM` (100%).
+- Với file `COPIED_VERBATIM`, repo chỉ giữ **outline cần viết lại** trong `docs/adapted/**` (các file `*_REWRITE_NEEDED.md`) thay vì coi template copy là “deliverable”.
+- `performance/k6/*` đã có ghi chú provenance và dùng endpoint/domain của KTPM (quần áo). Báo cáo hiện đánh giá `OK_TO_ADAPT`.
+
+**Rationale:** mục tiêu là giữ được “evidence-based artefact” (có template để tham khảo) nhưng vẫn đảm bảo phần nộp/đánh giá là **nội dung tự viết/điền theo KTPM**.
+
 ---
 
 ## 9) WHY: Vì sao CI fail phải tự tạo Issue (C)
@@ -414,7 +461,8 @@ Repo ktpm hiện **KHÔNG TỒN TẠI** file định nghĩa Requirement IDs riê
 
 **Hiện trạng:**
 
-- `eCommerce_Reactjs/src` không có file test.
+- Đã có test tối thiểu chạy được: `eCommerce_Reactjs/src/App.test.js` (smoke route `/`).
+- Tuy nhiên test theo hành vi người dùng (product list / add cart theo size / out-of-stock) vẫn còn thiếu.
 
 **Đề xuất bổ sung (file mới):**
 
@@ -434,10 +482,8 @@ Repo ktpm hiện **KHÔNG TỒN TẠI** file định nghĩa Requirement IDs riê
 
 ### 6.5) Hiệu năng
 
-- Repo ktpm không có k6/jmeter script: **KHÔNG TỒN TẠI**.
-- Đề xuất tham chiếu từ dự án books:
-  - `fullstack-vitejs-books/performance/k6/load-test.js`
-  - `fullstack-vitejs-books/performance/k6/stress-test.js`
+- Repo ktpm đã có k6 scripts: `performance/k6/load-test.js`, `performance/k6/stress-test.js`.
+- Gợi ý “điểm cao” (nhẹ công): dùng k6 chạy 1 lần load + 1 lần stress và ghi kết quả tóm tắt vào test report.
 
 ---
 
@@ -449,14 +495,14 @@ Repo ktpm hiện **KHÔNG TỒN TẠI** file định nghĩa Requirement IDs riê
   - Giữ ngưỡng coverage ≥ 80% (đang có trong `ecomAPI/jest.config.js`) và mở rộng phạm vi coverage vào `src/services`.
   - Theo dõi số test pending (đang có 7 pending trong `ecomAPI/jest-results.json`).
 - Frontend:
-  - Mục tiêu có ít nhất 1–3 test file thật trong `eCommerce_Reactjs/src` để tránh CI “xanh nhưng không test”.
+  - Mục tiêu có 1–3 test file thật trong `eCommerce_Reactjs/src` (hiện đã có 1 file: `eCommerce_Reactjs/src/App.test.js`).
 
 ### 7.2) Checklist hoàn thành
 
 - CI backend chạy ổn định unit + integration (đã có).
 - Có job chạy DB-real `test:db` (đã có trong `.github/workflows/backend-ci.yml`).
 - Cypress chạy được bằng script và có config (hiện tại KHÔNG TỒN TẠI).
-- Frontend có test file thật (hiện tại KHÔNG TỒN TẠI).
+- Frontend có test file thật (đã có `eCommerce_Reactjs/src/App.test.js`).
 
 ---
 

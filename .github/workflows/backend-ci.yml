@@ -21,7 +21,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: rootpassword
-          MYSQL_DATABASE: ecom_test
+          MYSQL_DATABASE: ecom
         ports:
           - 3306:3306
         options: >-
@@ -44,6 +44,20 @@ jobs:
       - name: Install dependencies
         working-directory: ./ecomAPI
         run: npm ci
+
+      - name: Seed MySQL schema (ecom.sql)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..30}; do
+            mysqladmin ping -h 127.0.0.1 -P 3306 -uroot -prootpassword --protocol=tcp --silent && break
+            sleep 2
+          done
+
+          echo "Importing ecom.sql into MySQL..."
+          mysql -h 127.0.0.1 -P 3306 -uroot -prootpassword --protocol=tcp --default-character-set=utf8mb4 < ecom.sql
 
       - name: Run linter
         working-directory: ./ecomAPI
@@ -69,7 +83,7 @@ jobs:
           DB_PORT: 3306
           DB_USER: root
           DB_PASSWORD: rootpassword
-          DB_NAME: ecom_test
+          DB_NAME: ecom
 
       - name: Run DB-real tests (MySQL)
         working-directory: ./ecomAPI
@@ -83,7 +97,7 @@ jobs:
           DB_PORT: 3306
           DB_USER: root
           DB_PASSWORD: rootpassword
-          DB_NAME: ecom_test
+          DB_NAME: ecom
 
       - name: Collect short test logs
         if: failure()

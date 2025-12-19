@@ -3,6 +3,30 @@ const transparentPng =
 
 describe("Shop - Browse products", () => {
   beforeEach(() => {
+    // Shop page loads category + brand filters from Allcode on mount.
+    // Stub them so the FE E2E does not depend on a real backend.
+    cy.intercept("GET", "**/api/get-all-code?type=CATEGORY*", {
+      statusCode: 200,
+      body: {
+        errCode: 0,
+        data: [
+          { id: 1, type: "CATEGORY", value: "Tất cả", code: "ALL" },
+          { id: 9, type: "CATEGORY", value: "Áo thun", code: "ao-thun" },
+        ],
+      },
+    }).as("getCategories");
+
+    cy.intercept("GET", "**/api/get-all-code?type=BRAND*", {
+      statusCode: 200,
+      body: {
+        errCode: 0,
+        data: [
+          { id: 1, type: "BRAND", value: "Tất cả", code: "ALL" },
+          { id: 14, type: "BRAND", value: "ICONDENIM", code: "icondenim" },
+        ],
+      },
+    }).as("getBrands");
+
     cy.intercept("GET", "**/api/get-all-product-user*", {
       statusCode: 200,
       body: {
@@ -28,6 +52,8 @@ describe("Shop - Browse products", () => {
 
   it("shows a product card from API and links to detail page", () => {
     cy.visit("/shop");
+    cy.wait("@getCategories");
+    cy.wait("@getBrands");
     cy.wait("@getProducts");
 
     cy.contains("Áo thun test").should("be.visible");

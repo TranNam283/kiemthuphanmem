@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
   issues: write
   pull-requests: write
 
@@ -183,7 +183,8 @@ jobs:
               ].join('\n');
               fs.mkdirSync('docs', { recursive: true });
               fs.appendFileSync(fallbackPath, entry);
-              throw new Error(`Issue creation failed; wrote fallback to ${fallbackPath}. ${String(err).slice(0, 300)}`);
+              console.log(`Issue creation failed; wrote fallback to ${fallbackPath}. ${String(err).slice(0, 300)}`);
+              return;
             }
 
             const pr = context.payload.pull_request;
@@ -196,19 +197,6 @@ jobs:
                 body: commentBody,
               });
             }
-
-      - name: Fallback PR with CI_FAILURES.md
-        if: failure() && steps.create_issue.outcome == 'failure'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          commit-message: "docs(ci): add CI failure log (frontend)"
-          branch: "ci/failure-frontend-${{ github.run_id }}"
-          title: "[CI FAIL][frontend] Save logs to docs/CI_FAILURES.md"
-          body: |
-            CI could not create an Issue (permissions/labels). This PR stores failure context in `docs/CI_FAILURES.md`.
-            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          add-paths: |
-            docs/CI_FAILURES.md
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

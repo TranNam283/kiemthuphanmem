@@ -18,22 +18,22 @@ Phạm vi scenario tập trung vào:
 
 ## 2) Danh sách scenario
 
-| Scenario ID | Module | Mô tả scenario | Mức kiểm thử chính | Tự động hoá | Evidence/Mapping |
-| --- | --- | --- | --- | --- | --- |
-| TS-AUTH-01 | Auth | Đăng nhập thành công với email/password hợp lệ | System (UI) + API | ✅ Cypress smoke + Jest API wrapper | Cypress: `auth-login.cy.js`; API: `POST /api/login` |
-| TS-AUTH-02 | Auth | Đăng nhập thất bại (sai mật khẩu/thiếu field) trả lỗi đúng | API/Contract | ✅ Jest/Supertest | `POST /api/login` (negative) |
-| TS-PROD-01 | Product | Duyệt danh sách sản phẩm (có phân trang/keyword) | System (UI) + API | ✅ Cypress smoke + Jest wrapper | Cypress: `shop-browse.cy.js`; API: `GET /api/get-all-product-user` |
-| TS-PROD-02 | Product | Xem chi tiết sản phẩm theo id | System (UI) + API | ⏳ Planned | UI: `/detail-product/:id`; API: `GET /api/get-detail-product-by-id?id=` |
-| TS-CART-01 | Cart | Thêm sản phẩm vào giỏ (quantity/size) | System (UI) + API | ⏳ Planned | API: `POST /api/add-shopcart` |
-| TS-CART-02 | Cart | Xem giỏ hàng của user đăng nhập | System (UI) + API | ✅ Cypress smoke | Cypress: `cart-view.cy.js`; API: `GET /api/get-all-shopcart-by-userId?id=` |
-| TS-CART-03 | Cart | Xoá item giỏ hàng | API/Contract | ⏳ Planned | API: `DELETE /api/delete-item-shopcart` |
-| TS-ORDER-01 | Order | Tạo đơn hàng (COD) từ giỏ hàng | System (UI) + Integration DB | ⏳ Planned (real) | API: `POST /api/create-new-order` |
-| TS-ORDER-02 | Order | Xem lịch sử / chi tiết đơn hàng | System + API | ⏳ Planned | API (tuỳ thiết kế) |
-| TS-ADDR-01 | Address | Thêm/cập nhật địa chỉ giao hàng | System + API | ⏳ Planned | API (AddressUser) |
-| TS-PAY-01 | Payment | Chọn phương thức thanh toán và hiển thị tổng tiền đúng | System + Integration | ⏳ Planned | UI checkout + fee ship |
-| TS-ADMIN-01 | Admin | Admin tạo mới sản phẩm và thấy xuất hiện ngoài trang shop | End-to-end (real) | ⏳ Optional | cần seed/admin token |
-| TS-PERF-01 | Performance | Load test browse sản phẩm trong 2–5 phút | Non-functional | ✅ k6 | `performance/k6/load-test.js` |
-| TS-PERF-02 | Performance | Stress test tăng tải dần đến ngưỡng lỗi | Non-functional | ✅ k6 | `performance/k6/stress-test.js` |
+| Scenario ID | Module      | Mô tả scenario                                             | Mức kiểm thử chính           | Tự động hoá                         | Evidence/Mapping                                                           |
+| ----------- | ----------- | ---------------------------------------------------------- | ---------------------------- | ----------------------------------- | -------------------------------------------------------------------------- |
+| TS-AUTH-01  | Auth        | Đăng nhập thành công với email/password hợp lệ             | System (UI) + API            | ✅ Cypress smoke + Jest API wrapper | Cypress: `auth-login.cy.js`; API: `POST /api/login`                        |
+| TS-AUTH-02  | Auth        | Đăng nhập thất bại (sai mật khẩu/thiếu field) trả lỗi đúng | API/Contract                 | ✅ Jest/Supertest                   | `POST /api/login` (negative)                                               |
+| TS-PROD-01  | Product     | Duyệt danh sách sản phẩm (có phân trang/keyword)           | System (UI) + API            | ✅ Cypress smoke + Jest wrapper     | Cypress: `shop-browse.cy.js`; API: `GET /api/get-all-product-user`         |
+| TS-PROD-02  | Product     | Xem chi tiết sản phẩm theo id                              | System (UI) + API            | ⏳ Planned                          | UI: `/detail-product/:id`; API: `GET /api/get-detail-product-by-id?id=`    |
+| TS-CART-01  | Cart        | Thêm sản phẩm vào giỏ (quantity/size)                      | System (UI) + API            | ⏳ Planned                          | API: `POST /api/add-shopcart`                                              |
+| TS-CART-02  | Cart        | Xem giỏ hàng của user đăng nhập                            | System (UI) + API            | ✅ Cypress smoke                    | Cypress: `cart-view.cy.js`; API: `GET /api/get-all-shopcart-by-userId?id=` |
+| TS-CART-03  | Cart        | Xoá item giỏ hàng                                          | API/Contract                 | ⏳ Planned                          | API: `DELETE /api/delete-item-shopcart`                                    |
+| TS-ORDER-01 | Order       | Tạo đơn hàng (COD) từ giỏ hàng                             | System (UI) + Integration DB | ⏳ Planned (real)                   | API: `POST /api/create-new-order`                                          |
+| TS-ORDER-02 | Order       | Xem lịch sử / chi tiết đơn hàng                            | System + API                 | ⏳ Planned                          | API (tuỳ thiết kế)                                                         |
+| TS-ADDR-01  | Address     | Thêm/cập nhật địa chỉ giao hàng                            | System + API                 | ⏳ Planned                          | API (AddressUser)                                                          |
+| TS-PAY-01   | Payment     | Chọn phương thức thanh toán và hiển thị tổng tiền đúng     | System + Integration         | ⏳ Planned                          | UI checkout + fee ship                                                     |
+| TS-ADMIN-01 | Admin       | Admin tạo mới sản phẩm và thấy xuất hiện ngoài trang shop  | End-to-end (real)            | ⏳ Optional                         | cần seed/admin token                                                       |
+| TS-PERF-01  | Performance | Load test browse sản phẩm trong 2–5 phút                   | Non-functional               | ✅ k6                               | `performance/k6/load-test.js`                                              |
+| TS-PERF-02  | Performance | Stress test tăng tải dần đến ngưỡng lỗi                    | Non-functional               | ✅ k6                               | `performance/k6/stress-test.js`                                            |
 
 ## 3) Quy tắc truy vết scenario → test case → automation
 

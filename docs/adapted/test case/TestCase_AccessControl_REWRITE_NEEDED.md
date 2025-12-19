@@ -22,16 +22,16 @@ Giả định role:
 
 ## 3) Bảng test case
 
-| Test Case ID | Tiêu đề | Pre-conditions | Test Steps | Test Data | Expected Result | Actual Result | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| TC-AUTH-01 | Login thành công (user) | Tồn tại user | 1) Gọi `POST /api/login` 2) Lưu token | email+password đúng | Trả `errCode=0` + có token/user |  |  |
-| TC-AUTH-02 | Login sai mật khẩu | User tồn tại | Gọi `POST /api/login` với pass sai | pass sai | Trả lỗi rõ ràng (`errCode!=0` hoặc 4xx) |  |  |
-| TC-AUTH-03 | Login thiếu email | - | Gọi login thiếu email | thiếu email | Trả lỗi validation |  |  |
-| TC-AUTH-04 | Login thiếu password | - | Gọi login thiếu password | thiếu password | Trả lỗi validation |  |  |
-| TC-AUTH-05 | Request không token bị chặn | Endpoint yêu cầu login | 1) Gọi endpoint cần token 2) Không set header | không token | 401/403 |  |  |
-| TC-AUTH-06 | Token sai/expired bị chặn | Endpoint yêu cầu login | Gọi endpoint với token giả | token invalid | 401/403 |  |  |
-| TC-AUTH-07 | User thường bị chặn ở admin endpoint | Có token role user | Gọi endpoint admin | token user | 403 |  |  |
-| TC-AUTH-08 | Admin truy cập admin endpoint | Có token role admin | Gọi endpoint admin | token admin | 200 + response hợp lệ |  |  |
+| Test Case ID | Tiêu đề                              | Pre-conditions         | Test Steps                                    | Test Data           | Expected Result                         | Actual Result | Status |
+| ------------ | ------------------------------------ | ---------------------- | --------------------------------------------- | ------------------- | --------------------------------------- | ------------- | ------ |
+| TC-AUTH-01   | Login thành công (user)              | Tồn tại user           | 1) Gọi `POST /api/login` 2) Lưu token         | email+password đúng | Trả `errCode=0` + có token/user         |               |        |
+| TC-AUTH-02   | Login sai mật khẩu                   | User tồn tại           | Gọi `POST /api/login` với pass sai            | pass sai            | Trả lỗi rõ ràng (`errCode!=0` hoặc 4xx) |               |        |
+| TC-AUTH-03   | Login thiếu email                    | -                      | Gọi login thiếu email                         | thiếu email         | Trả lỗi validation                      |               |        |
+| TC-AUTH-04   | Login thiếu password                 | -                      | Gọi login thiếu password                      | thiếu password      | Trả lỗi validation                      |               |        |
+| TC-AUTH-05   | Request không token bị chặn          | Endpoint yêu cầu login | 1) Gọi endpoint cần token 2) Không set header | không token         | 401/403                                 |               |        |
+| TC-AUTH-06   | Token sai/expired bị chặn            | Endpoint yêu cầu login | Gọi endpoint với token giả                    | token invalid       | 401/403                                 |               |        |
+| TC-AUTH-07   | User thường bị chặn ở admin endpoint | Có token role user     | Gọi endpoint admin                            | token user          | 403                                     |               |        |
+| TC-AUTH-08   | Admin truy cập admin endpoint        | Có token role admin    | Gọi endpoint admin                            | token admin         | 200 + response hợp lệ                   |               |        |
 
 ## 4) Gợi ý tự động hoá (mapping)
 

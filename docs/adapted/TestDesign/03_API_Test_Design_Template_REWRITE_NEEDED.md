@@ -10,14 +10,14 @@
 - Mục đích:
 - Actor/Role: Guest/User/Admin
 - AuthN/AuthZ:
-	- Token: có/không
-	- Role requirement: (nếu có)
+  - Token: có/không
+  - Role requirement: (nếu có)
 - Input:
-	- Query:
-	- Body:
+  - Query:
+  - Body:
 - Output:
-	- Success schema:
-	- Error schema:
+  - Success schema:
+  - Error schema:
 
 ### A.2 Kỹ thuật test design áp dụng
 
@@ -29,7 +29,7 @@
 ### A.3 Bộ test case cho endpoint
 
 | API-TC ID | Mục tiêu | Preconditions | Request | Expected | Priority | Automation |
-| --- | --- | --- | --- | --- | --- | --- |
+| --------- | -------- | ------------- | ------- | -------- | -------- | ---------- |
 
 ### A.4 Gợi ý assert tối thiểu
 
@@ -51,21 +51,21 @@
 ### B.2 EP/BVA
 
 - Email:
-	- hợp lệ (đúng format)
-	- không hợp lệ (thiếu @, rỗng)
+  - hợp lệ (đúng format)
+  - không hợp lệ (thiếu @, rỗng)
 - Password:
-	- đúng
-	- sai
-	- rỗng
+  - đúng
+  - sai
+  - rỗng
 
 ### B.3 Test cases
 
-| API-TC ID | Mục tiêu | Preconditions | Request | Expected | Priority | Automation |
-| --- | --- | --- | --- | --- | --- | --- |
-| API-AUTH-01 | Login thành công | User tồn tại | body `{email,password}` đúng | 200 + `errCode=0` + token/user | High | ✅ Cypress (stub) + ✅ Jest (planned real) |
-| API-AUTH-02 | Sai mật khẩu | User tồn tại | body sai pass | 200/4xx + `errCode!=0` | High | ✅ Jest/Supertest |
-| API-AUTH-03 | Thiếu email | - | body thiếu email | 4xx hoặc `errCode!=0` | Medium | ✅ Jest/Supertest |
-| API-AUTH-04 | Thiếu password | - | body thiếu password | 4xx hoặc `errCode!=0` | Medium | ✅ Jest/Supertest |
+| API-TC ID   | Mục tiêu         | Preconditions | Request                      | Expected                       | Priority | Automation                                 |
+| ----------- | ---------------- | ------------- | ---------------------------- | ------------------------------ | -------- | ------------------------------------------ |
+| API-AUTH-01 | Login thành công | User tồn tại  | body `{email,password}` đúng | 200 + `errCode=0` + token/user | High     | ✅ Cypress (stub) + ✅ Jest (planned real) |
+| API-AUTH-02 | Sai mật khẩu     | User tồn tại  | body sai pass                | 200/4xx + `errCode!=0`         | High     | ✅ Jest/Supertest                          |
+| API-AUTH-03 | Thiếu email      | -             | body thiếu email             | 4xx hoặc `errCode!=0`          | Medium   | ✅ Jest/Supertest                          |
+| API-AUTH-04 | Thiếu password   | -             | body thiếu password          | 4xx hoặc `errCode!=0`          | Medium   | ✅ Jest/Supertest                          |
 
 ---
 
@@ -85,12 +85,12 @@
 
 ### C.3 Test cases
 
-| API-TC ID | Mục tiêu | Preconditions | Request | Expected | Priority | Automation |
-| --- | --- | --- | --- | --- | --- | --- |
-| API-PROD-01 | List sản phẩm mặc định | có seed data | query limit=6 offset=0 | 200 + danh sách/`count` hợp lệ | High | ✅ Cypress (stub) + ✅ Jest wrapper |
-| API-PROD-02 | Keyword có khoảng trắng | có seed data | keyword="ao thun" | 200 + không crash; keyword được encode | Medium | ✅ FE unit test (URL encode) |
-| API-PROD-03 | limit=0 | - | limit=0 | 200 + data rỗng hoặc error rõ ràng | Low | ⏳ Planned |
-| API-PROD-04 | offset âm | - | offset=-1 | 4xx hoặc normalize về 0 | Low | ⏳ Planned |
+| API-TC ID   | Mục tiêu                | Preconditions | Request                | Expected                               | Priority | Automation                          |
+| ----------- | ----------------------- | ------------- | ---------------------- | -------------------------------------- | -------- | ----------------------------------- |
+| API-PROD-01 | List sản phẩm mặc định  | có seed data  | query limit=6 offset=0 | 200 + danh sách/`count` hợp lệ         | High     | ✅ Cypress (stub) + ✅ Jest wrapper |
+| API-PROD-02 | Keyword có khoảng trắng | có seed data  | keyword="ao thun"      | 200 + không crash; keyword được encode | Medium   | ✅ FE unit test (URL encode)        |
+| API-PROD-03 | limit=0                 | -             | limit=0                | 200 + data rỗng hoặc error rõ ràng     | Low      | ⏳ Planned                          |
+| API-PROD-04 | offset âm               | -             | offset=-1              | 4xx hoặc normalize về 0                | Low      | ⏳ Planned                          |
 
 ---
 
@@ -104,21 +104,21 @@
 
 ### D.2 Decision table (tối giản)
 
-| Token | User tồn tại | productDetailSizeId hợp lệ | quantity hợp lệ | Expected |
-| --- | --- | --- | --- | --- |
-| No | - | - | - | 401/errCode auth |
-| Yes | No | - | - | 404/errCode user |
-| Yes | Yes | No | - | 4xx/errCode product |
-| Yes | Yes | Yes | No (0/âm) | 4xx/errCode validation |
-| Yes | Yes | Yes | Yes | 200 + cart updated |
+| Token | User tồn tại | productDetailSizeId hợp lệ | quantity hợp lệ | Expected               |
+| ----- | ------------ | -------------------------- | --------------- | ---------------------- |
+| No    | -            | -                          | -               | 401/errCode auth       |
+| Yes   | No           | -                          | -               | 404/errCode user       |
+| Yes   | Yes          | No                         | -               | 4xx/errCode product    |
+| Yes   | Yes          | Yes                        | No (0/âm)       | 4xx/errCode validation |
+| Yes   | Yes          | Yes                        | Yes             | 200 + cart updated     |
 
 ### D.3 Test cases
 
-| API-TC ID | Mục tiêu | Preconditions | Request | Expected | Priority | Automation |
-| --- | --- | --- | --- | --- | --- | --- |
-| API-CART-01 | Add to cart ok | user login + size tồn tại | body `{userId, productdetailsizeId, quantity}` | 200 + `errCode=0` | High | ⏳ Planned (real) |
-| API-CART-02 | Không token | - | gọi không header auth | 401/403 | High | ✅ Jest contract (AuthZ) |
-| API-CART-03 | quantity=0 | user login | quantity=0 | 4xx/errCode validation | Medium | ⏳ Planned |
+| API-TC ID   | Mục tiêu       | Preconditions             | Request                                        | Expected               | Priority | Automation               |
+| ----------- | -------------- | ------------------------- | ---------------------------------------------- | ---------------------- | -------- | ------------------------ |
+| API-CART-01 | Add to cart ok | user login + size tồn tại | body `{userId, productdetailsizeId, quantity}` | 200 + `errCode=0`      | High     | ⏳ Planned (real)        |
+| API-CART-02 | Không token    | -                         | gọi không header auth                          | 401/403                | High     | ✅ Jest contract (AuthZ) |
+| API-CART-03 | quantity=0     | user login                | quantity=0                                     | 4xx/errCode validation | Medium   | ⏳ Planned               |
 
 ## E) Checklist review nhanh cho endpoint
 

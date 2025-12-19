@@ -18,16 +18,16 @@
 
 ## 3) Bảng test case
 
-| Test Case ID | Tiêu đề | Pre-conditions | Test Steps | Test Data | Expected Result | Actual Result | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| TC-ORDER-01 | Tạo đơn hàng COD thành công | User login + có item | POST create-new-order | items + address + payment=COD | 200 + `errCode=0` + orderId |  |  |
-| TC-ORDER-02 | Tạo đơn hàng thiếu items | User login | POST thiếu items | items=[] | 4xx/errCode validation |  |  |
-| TC-ORDER-03 | Tạo đơn hàng thiếu địa chỉ | User login | POST thiếu address | address null | 4xx/errCode validation |  |  |
-| TC-ORDER-04 | Tạo đơn hàng khi chưa login | - | POST create | - | 401/403 |  |  |
-| TC-ORDER-05 | Tổng tiền = sum(item) + ship - discount | User login + có ship/voucher | POST create | items + shipFee + voucher | total tính đúng (nếu response có) |  |  |
-| TC-ORDER-06 | Xem danh sách đơn theo user | User login | GET orders by userId | userId | 200 + list |  |  |
-| TC-ORDER-07 | User không xem được order user khác | User A login | GET order của user B | orderId khác owner | 403/404 |  |  |
-| TC-ORDER-08 | Admin cập nhật trạng thái order | Admin login | Update status | orderId + status | 200 + status đổi đúng |  |  |
+| Test Case ID | Tiêu đề                                 | Pre-conditions               | Test Steps            | Test Data                     | Expected Result                   | Actual Result | Status |
+| ------------ | --------------------------------------- | ---------------------------- | --------------------- | ----------------------------- | --------------------------------- | ------------- | ------ |
+| TC-ORDER-01  | Tạo đơn hàng COD thành công             | User login + có item         | POST create-new-order | items + address + payment=COD | 200 + `errCode=0` + orderId       |               |        |
+| TC-ORDER-02  | Tạo đơn hàng thiếu items                | User login                   | POST thiếu items      | items=[]                      | 4xx/errCode validation            |               |        |
+| TC-ORDER-03  | Tạo đơn hàng thiếu địa chỉ              | User login                   | POST thiếu address    | address null                  | 4xx/errCode validation            |               |        |
+| TC-ORDER-04  | Tạo đơn hàng khi chưa login             | -                            | POST create           | -                             | 401/403                           |               |        |
+| TC-ORDER-05  | Tổng tiền = sum(item) + ship - discount | User login + có ship/voucher | POST create           | items + shipFee + voucher     | total tính đúng (nếu response có) |               |        |
+| TC-ORDER-06  | Xem danh sách đơn theo user             | User login                   | GET orders by userId  | userId                        | 200 + list                        |               |        |
+| TC-ORDER-07  | User không xem được order user khác     | User A login                 | GET order của user B  | orderId khác owner            | 403/404                           |               |        |
+| TC-ORDER-08  | Admin cập nhật trạng thái order         | Admin login                  | Update status         | orderId + status              | 200 + status đổi đúng             |               |        |
 
 ## 4) Mapping automation
 

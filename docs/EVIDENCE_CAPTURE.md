@@ -7,10 +7,12 @@ Mục tiêu: hướng dẫn chụp “minh chứng” để đưa vào Word/Chư
 Chụp từ trang Actions của repo (run gần nhất):
 
 1. **Danh sách workflow**
+
    - Backend CI/CD: trạng thái (green)
    - Frontend CI/CD: trạng thái (green)
 
 2. **Frontend CI/CD run**
+
    - Step `Run unit tests`
    - Step `Run Cypress E2E (smoke)`
    - Step `Build production`

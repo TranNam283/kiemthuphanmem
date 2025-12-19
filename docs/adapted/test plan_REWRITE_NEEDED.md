@@ -34,11 +34,11 @@
 ## 4) Môi trường kiểm thử
 
 - Local dev:
-	- Backend: Node.js + MySQL (Docker compose hoặc MySQL local).
-	- Frontend: React/CRACO.
+  - Backend: Node.js + MySQL (Docker compose hoặc MySQL local).
+  - Frontend: React/CRACO.
 - CI (GitHub Actions):
-	- Backend job có MySQL service container.
-	- Frontend job chạy Jest + Cypress + build.
+  - Backend job có MySQL service container.
+  - Frontend job chạy Jest + Cypress + build.
 
 ## 5) Dữ liệu kiểm thử (test data strategy)
 

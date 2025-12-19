@@ -2,7 +2,7 @@
 
 > **Đồ án môn**: Kiểm thử phần mềm  
 > **Dự án**: eCommerce Full Stack (React.js + Node.js + MySQL)  
-> **Cập nhật**: 18/12/2025  
+> **Cập nhật**: 19/12/2025  
 > **Số trang mục tiêu**: 25-30 trang (chiếm ~30% của 80 trang tổng)
 
 ---
@@ -52,15 +52,17 @@
 
 ```yaml
 # Các jobs đã triển khai:
-✅ test - Lint + Unit test + Build production
-✅ create-issue-on-failure - Tự động tạo GitHub Issue khi fail
+✅ test - Lint + Unit tests (Jest) + E2E smoke (Cypress) + Build production
+✅ failure triage - Upload artifacts/logs + tự động tạo Issue/PR comment khi fail
 ```
 
 **Tính năng nổi bật:**
 
-- Build verification trước khi deploy
-- Upload build artifacts
-- Codecov coverage report
+- Unit tests chạy ở chế độ CI và có log tail khi fail (`ci-frontend-test.log`)
+- E2E smoke bằng Cypress chạy trong CI với danh sách spec “ổn định” (homepage/login/shop/cart)
+- Upload artifacts khi fail (Cypress screenshots/videos + failure logs)
+- Build verification trước khi deploy + upload build artifacts
+- Codecov coverage report (không block nếu upload fail)
 
 ---
 
@@ -181,6 +183,20 @@ Chương 4 tập trung vào **thiết kế kiểm thử** (test design) và các
 | Mã nguồn   | Backend `ecomAPI/`, Frontend `eCommerce_Reactjs/`, DB schema/seed `ecom.sql` | Test scripts (Jest/Supertest), cấu hình CI/CD, báo cáo coverage |
 | Môi trường | Docker Compose (local) / Railway (demo) / GitHub Actions (CI)                | Logs, screenshots, artifacts minh chứng                         |
 
+Ngoài các artefact “baseline 90 test case” (Phụ lục A), nhóm bổ sung bộ tài liệu trình bày theo phong cách repo “điểm cao” (dạng template/Office) nhưng **đã viết lại theo KTPM** và đặt tại `docs/adapted/**`:
+
+- Scenario list: `docs/adapted/Test_Scenario_REWRITE_NEEDED.md`
+- Test plan (tóm tắt theo template): `docs/adapted/test plan_REWRITE_NEEDED.md`
+- Unit test inventory: `docs/adapted/unit test_REWRITE_NEEDED.md`
+- Test report: `docs/adapted/test report_REWRITE_NEEDED.md`
+- Test Design workflow: `docs/adapted/TestDesign/03_Test Design Workflow_REWRITE_NEEDED.md`
+- API test design template: `docs/adapted/TestDesign/03_API_Test_Design_Template_REWRITE_NEEDED.md`
+- Review checklist: `docs/adapted/TestReviewChecklist/test case review checklist_REWRITE_NEEDED.md`
+- Module test cases (Auth/Product/Cart/Order/Payment/Address): `docs/adapted/test case/TestCase_*_REWRITE_NEEDED.md`
+- UAT checklist (Acceptance): `docs/adapted/UAT_Checklist.md`
+
+Mục tiêu của nhóm khi bổ sung `docs/adapted/**`: giúp giảng viên thấy rõ chuỗi **Scenario → Test case → Automation → Evidence** theo đúng cách trình bày của các repo “điểm cao”, đồng thời vẫn giữ nguyên tắc **không copy nội dung** (xem `docs/NOTICE_ADAPTATION.md`).
+
 #### 4.1.3 Baseline 90 test case và nguyên tắc phân bổ
 
 Trong phạm vi đồ án, nhóm chốt **baseline = 90 test case** để đảm bảo Chương 4 có quy mô đủ lớn và có thể triển khai theo mức độ ưu tiên:
@@ -235,12 +251,12 @@ Lưu ý: Giảng viên thường đánh giá cao **bằng chứng CI** vì lặp
 
 > Lưu ý: Các **TCxx** bên dưới là **ID test case thiết kế (baseline)**. Trạng thái chạy thật (PASS/PENDING/FAIL) được tổng hợp ở mục 4.7 theo report (ví dụ `ecomAPI/jest-results.json`) và log CI.
 
-| Giai đoạn thiết kế | Giai đoạn test      | Test đã triển khai                                                                                   |
-| ------------------ | ------------------- | ---------------------------------------------------------------------------------------------------- |
-| Requirements       | Acceptance Testing  | ⏳ Manual testing                                                                                    |
-| System Design      | System Testing      | ✅ E2E smoke (Cypress): `homepage.cy.js`, `auth-login.cy.js`, `shop-browse.cy.js`, `cart-view.cy.js` |
-| Architecture       | Integration Testing | ✅ Integration (Jest): `orderService.test.js` + nhóm `*.mysql.int.test.js`                           |
-| Module Design      | Unit Testing        | ✅ Unit (Jest): `authService.test.js`, `productService.test.js`, `orderService.test.js`              |
+| Giai đoạn thiết kế | Giai đoạn test      | Test đã triển khai                                                                                           |
+| ------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Requirements       | Acceptance Testing  | ✅ UAT checklist (manual): `docs/adapted/UAT_Checklist.md` + minh chứng chụp theo `docs/EVIDENCE_CAPTURE.md` |
+| System Design      | System Testing      | ✅ E2E smoke (Cypress): `homepage.cy.js`, `auth-login.cy.js`, `shop-browse.cy.js`, `cart-view.cy.js`         |
+| Architecture       | Integration Testing | ✅ Integration (Jest): `orderService.test.js` + nhóm `*.mysql.int.test.js`                                   |
+| Module Design      | Unit Testing        | ✅ Unit (Jest): `authService.test.js`, `productService.test.js`, `orderService.test.js`                      |
 
 #### 4.2.1 Ánh xạ artefact thực tế của dự án và test case (baseline)
 
@@ -617,6 +633,10 @@ Các test PENDING hiện nằm chủ yếu ở nhóm API-contract mock (ví dụ
   - `eCommerce_Reactjs/cypress/e2e/cart-view.cy.js` (view cart – stub cart + shipping)
 
 Ghi chú: các E2E smoke dùng `cy.intercept()` để stub API nhằm giảm phụ thuộc backend/DB và giảm flaky trên CI.
+
+Tuỳ chọn “minh chứng mạnh” (không block PR): repo có workflow manual chạy Cypress với **backend thật** bằng docker-compose: `.github/workflows/e2e-real-backend.yml` (spec `eCommerce_Reactjs/cypress/e2e/shop-browse.real.cy.js`).
+
+Hướng dẫn chụp minh chứng CI (đưa vào Word/Chương 4): `docs/EVIDENCE_CAPTURE.md`.
 
 #### 4.7.3 Kết quả kiểm thử hiệu năng (k6)
 

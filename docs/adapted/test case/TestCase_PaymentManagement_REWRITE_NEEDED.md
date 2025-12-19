@@ -18,13 +18,13 @@ Ghi chú: nếu dự án chưa tích hợp gateway thanh toán thật, các test
 
 ## 3) Bảng test case
 
-| Test Case ID | Tiêu đề | Pre-conditions | Test Steps | Test Data | Expected Result | Actual Result | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| TC-PAY-01 | Checkout chọn COD và đặt hàng | User login + có cart | Chọn COD → submit | paymentMethod=COD | Order tạo thành công |  |  |
-| TC-PAY-02 | Không chọn payment method (nếu bắt buộc) | User login + có cart | Submit không chọn | paymentMethod missing | UI báo lỗi hoặc backend reject |  |  |
-| TC-PAY-03 | Tổng tiền hiển thị đúng | User login + có cart | Mở checkout | items + shipFee | Total = sum + ship - discount (nếu có) |  |  |
-| TC-PAY-04 | Thay đổi phương thức thanh toán cập nhật UI | User login | Chọn method khác | COD/ONLINE | UI cập nhật đúng label/fee |  |  |
-| TC-PAY-05 | Online payment callback (planned) | Gateway configured | giả lập callback | payload callback | Order status cập nhật đúng |  | ⏳ |
+| Test Case ID | Tiêu đề                                     | Pre-conditions       | Test Steps        | Test Data             | Expected Result                        | Actual Result | Status |
+| ------------ | ------------------------------------------- | -------------------- | ----------------- | --------------------- | -------------------------------------- | ------------- | ------ |
+| TC-PAY-01    | Checkout chọn COD và đặt hàng               | User login + có cart | Chọn COD → submit | paymentMethod=COD     | Order tạo thành công                   |               |        |
+| TC-PAY-02    | Không chọn payment method (nếu bắt buộc)    | User login + có cart | Submit không chọn | paymentMethod missing | UI báo lỗi hoặc backend reject         |               |        |
+| TC-PAY-03    | Tổng tiền hiển thị đúng                     | User login + có cart | Mở checkout       | items + shipFee       | Total = sum + ship - discount (nếu có) |               |        |
+| TC-PAY-04    | Thay đổi phương thức thanh toán cập nhật UI | User login           | Chọn method khác  | COD/ONLINE            | UI cập nhật đúng label/fee             |               |        |
+| TC-PAY-05    | Online payment callback (planned)           | Gateway configured   | giả lập callback  | payload callback      | Order status cập nhật đúng             |               | ⏳     |
 
 ## 4) Mapping automation
 

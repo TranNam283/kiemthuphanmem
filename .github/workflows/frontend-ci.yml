@@ -43,6 +43,31 @@ jobs:
         env:
           CI: true
 
+      - name: Run Cypress E2E (smoke)
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./eCommerce_Reactjs
+          install: false
+          start: npm start
+          wait-on: http://localhost:3000
+          wait-on-timeout: 120
+          browser: chrome
+          spec: cypress/e2e/homepage.cy.js,cypress/e2e/auth-login.cy.js,cypress/e2e/shop-browse.cy.js,cypress/e2e/cart-view.cy.js
+        env:
+          CI: false
+          BROWSER: none
+          PORT: 3000
+
+      - name: Upload Cypress artifacts (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-artifacts-${{ github.run_id }}
+          path: |
+            eCommerce_Reactjs/cypress/screenshots
+            eCommerce_Reactjs/cypress/videos
+          retention-days: 14
+
       - name: Build production
         working-directory: ./eCommerce_Reactjs
         run: npm run build

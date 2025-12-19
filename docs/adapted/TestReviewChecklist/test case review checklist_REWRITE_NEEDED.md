@@ -1,30 +1,45 @@
-﻿# REWRITE_NEEDED: test case review checklist
+﻿# Test Case Review Checklist (KTPM)
 
-This file is a rewrite outline (not a rewrite) because the corresponding template in docs/ref was detected as COPIED_VERBATIM vs the reference repository.
+> Mục tiêu: checklist để nhóm review test case trước khi “đóng” (freeze) và trước khi chuyển sang automation.
 
-## Provenance
-- Source (reference): D:\Projects\fullstack-vitejs-books\docs\tests\TestReviewChecklist\test case review checklist.xlsx
-- Local copy (tracked as original): d:\Projects\ktpm\docs\ref\TestReviewChecklist\test case review checklist.xlsx
-- Similarity evidence: alignedTokenPct=100%, lineOverlapPct=100%
+## 1) Checklist nội dung test case
 
-## Rewrite Instructions (must be original)
-- Rewrite the content to fit KTPM (e-commerce clothing) domain; avoid copying phrasing/structure verbatim.
-- Keep only generic testing concepts; re-derive examples, IDs, and scenarios from KTPM endpoints/features.
-- Prefer Vietnamese wording consistent with the rest of this repo.
+| ID    | Hạng mục kiểm                                                               | Đạt/Không | Ghi chú |
+| ----- | --------------------------------------------------------------------------- | --------- | ------- |
+| CL-01 | Test case có ID duy nhất, đặt theo module (VD: TC-CART-01)                  |           |         |
+| CL-02 | Tiêu đề rõ ràng, mô tả đúng mục tiêu kiểm thử                               |           |         |
+| CL-03 | Preconditions đầy đủ (role, login, data seed, env)                          |           |         |
+| CL-04 | Steps có thể làm theo, không mơ hồ                                          |           |         |
+| CL-05 | Test data cụ thể (giá trị, id, quantity, email…)                            |           |         |
+| CL-06 | Expected result kiểm được (status code, message, UI text, DB change)        |           |         |
+| CL-07 | Có ít nhất 1 negative case cho mỗi luồng quan trọng                         |           |         |
+| CL-08 | Có boundary/edge case cho input quan trọng (quantity, limit/offset)         |           |         |
+| CL-09 | Có testcase Auth/AuthZ cho endpoint cần token/role                          |           |         |
+| CL-10 | Không phụ thuộc dữ liệu “mơ hồ” (VD: “sản phẩm bất kỳ”) nếu muốn automation |           |         |
 
-## Proposed New Structure (suggestion)
-- Purpose & scope
-- Definitions (role, state, entities: product, cart, order, voucher, address)
-- Test data strategy
-- Test case format (new column set)
-- Example test cases (new IDs + new steps)
-- Review checklist
+## 2) Checklist truy vết (Traceability)
 
-## KTPM Mapping Hints
-- Access control: /api/login, JWT middleware, admin/user separation
-- Product browsing: /api/get-all-product-user, /api/get-detail-product-by-id
-- Cart: /api/add-shopcart, /api/get-shop-cart-by-user-id
-- Orders: /api/create-new-order, /api/get-order-by-id
+| ID    | Hạng mục kiểm                                               | Đạt/Không | Ghi chú |
+| ----- | ----------------------------------------------------------- | --------- | ------- |
+| TR-01 | Test case map được sang Scenario (TS-\*)                    |           |         |
+| TR-02 | Test case map được sang endpoint/UI screen cụ thể           |           |         |
+| TR-03 | Có chỉ ra mức kiểm thử (Unit/Integration/System/Acceptance) |           |         |
+| TR-04 | Nếu đã tự động hoá: có link file test thực tế               |           |         |
+| TR-05 | Nếu chưa tự động hoá: ghi rõ lý do + kế hoạch (planned)     |           |         |
 
-## Next Action
-- Replace this outline with a newly-authored document/template and update docs/NOTICE_ADAPTATION.md with what changed.
+## 3) Checklist chất lượng automation (nếu có)
+
+| ID    | Hạng mục kiểm                                                   | Đạt/Không | Ghi chú |
+| ----- | --------------------------------------------------------------- | --------- | ------- |
+| AU-01 | Test chạy lặp lại được trên CI (không cần thao tác tay)         |           |         |
+| AU-02 | Giảm flaky: tránh phụ thuộc network ngoài/clock không kiểm soát |           |         |
+| AU-03 | Có log/artifact khi fail (screenshot/video/log tail)            |           |         |
+| AU-04 | Không hardcode secrets/token thật trong repo                    |           |         |
+
+## 4) Review theo module (gợi ý)
+
+- Auth: login negative + token missing/invalid.
+- Product: list/detail + filter/sort + keyword có dấu/space.
+- Cart: add/view/delete + quantity boundary.
+- Order: create order + trạng thái/validation.
+- Address: create/update + validate phone/address.

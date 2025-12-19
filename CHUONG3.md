@@ -74,7 +74,7 @@ Minh chứng gần nhất (evidence-based trong repo): file `ecomAPI/jest-result
 - Kiểm thử điều hướng và ràng buộc quyền truy cập (route `/admin`, `/user`).
 - Kiểm thử hiển thị dữ liệu và xử lý lỗi mạng.
 
-Hiện trạng tối thiểu: có test chạy được để chứng minh CI không “pass giả” (smoke) tại `eCommerce_Reactjs/src/App.test.js`.
+Hiện trạng: đã có **frontend unit tests (Jest)** và **E2E smoke (Cypress)** chạy trong CI để chứng minh PASS/FAIL “thật” (minh chứng ở workflow `.github/workflows/frontend-ci.yml`, test files `eCommerce_Reactjs/src/*.test.js`, và Cypress specs `eCommerce_Reactjs/cypress/e2e/*.cy.js`).
 
 **C) Hạ tầng / DevOps**
 
@@ -88,7 +88,8 @@ Hiện trạng CI: workflows đã cấu hình theo hướng **fail thật + có 
 - Tính đúng/sai nghiệp vụ và SLA của bên thứ ba (GHN, PayPal, VNPay) trong môi trường production thật.
 - Kiểm thử “giao đơn thật/ thanh toán thật” (chỉ kiểm thử ở mức mock/sandbox).
 - Pen-test chuyên sâu (chỉ thực hiện security checklist + scan cơ bản).
-- E2E runnable ở mức “đầy đủ” (hiện repo có thư mục `eCommerce_Reactjs/cypress/e2e/` nhưng thiếu cấu hình/dependency Cypress để chạy ổn định).
+- E2E “full checkout” chạy với **backend + DB thật** như production (seed/tài khoản/điều kiện môi trường đầy đủ) ở mức **gating cho PR CI**.
+  - Ghi chú: repo đã có E2E **smoke** chạy ổn định trong CI (ưu tiên stub để giảm flaky), và có workflow manual để chạy Cypress với backend thật khi cần minh chứng nâng cao.
 
 ---
 
@@ -216,7 +217,7 @@ Quy trình kiểm thử được tổ chức theo chu trình 5 bước, mỗi b�
 **(4) System / E2E Testing**
 
 - Mục tiêu: kiểm thử luồng nghiệp vụ end‑to‑end trên UI.
-- Công cụ đề xuất: Playwright hoặc Cypress.
+- Công cụ: Cypress (đã triển khai smoke trong CI). Tuỳ chọn nâng cao: workflow manual chạy Cypress với backend thật (docker-compose) để tăng độ tin cậy System-level.
 - Luồng ưu tiên: Login → Browse → Add to cart → Checkout → View order.
 
 **(5) Acceptance Testing**
@@ -452,7 +453,7 @@ Tiêu chí tham khảo (có thể điều chỉnh theo yêu cầu môn):
   - DB-real test (`npm run test:db`) pass khi chạy với MySQL Docker (được xem là “gate” mạnh cho regression).
 - Không còn lỗi mức độ High (security/auth/order/cart) ở luồng ưu tiên.
 
-Ghi chú về E2E: vì E2E runnable chưa ổn định (thiếu cấu hình/dependency Cypress), E2E được xem là **mục tiêu nâng cấp**; nếu chưa kịp triển khai, thay thế bằng API contract + manual smoke có checklist.
+Ghi chú về E2E: hiện đã có **Cypress smoke chạy trong CI** (ưu tiên stub API để giảm flaky). Phần E2E “real backend/full checkout” được tách thành **workflow manual/nightly** (không block PR) để vừa có minh chứng hệ thống, vừa giữ CI ổn định.
 
 Coverage: coverage được Jest sinh ra trong CI; ngưỡng coverage (nếu áp dụng) nên đặt theo module trọng yếu thay vì yêu cầu “80% toàn dự án” để phù hợp đồ án.
 

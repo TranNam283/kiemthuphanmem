@@ -1,30 +1,43 @@
-﻿# REWRITE_NEEDED: unit test
+﻿# Unit Test Inventory (KTPM) — Danh mục unit test theo layer
 
-This file is a rewrite outline (not a rewrite) because the corresponding template in docs/ref was detected as COPIED_VERBATIM vs the reference repository.
+> Mục tiêu: trình bày danh sách unit tests theo “đơn vị cần test” (unit under test) và gắn link sang file test thực tế.
 
-## Provenance
-- Source (reference): D:\Projects\fullstack-vitejs-books\docs\tests\unit test.xlsx
-- Local copy (tracked as original): d:\Projects\ktpm\docs\ref\unit test.xlsx
-- Similarity evidence: alignedTokenPct=100%, lineOverlapPct=100%
+## 1) Quy ước ID
 
-## Rewrite Instructions (must be original)
-- Rewrite the content to fit KTPM (e-commerce clothing) domain; avoid copying phrasing/structure verbatim.
-- Keep only generic testing concepts; re-derive examples, IDs, and scenarios from KTPM endpoints/features.
-- Prefer Vietnamese wording consistent with the rest of this repo.
+- Backend unit: `UT-BE-UTIL-NN` (ưu tiên utils vì ổn định)
+- Frontend unit: `UT-FE-SVC-NN` (service wrappers), `UT-FE-CMP-NN` (components)
 
-## Proposed New Structure (suggestion)
-- Purpose & scope
-- Definitions (role, state, entities: product, cart, order, voucher, address)
-- Test data strategy
-- Test case format (new column set)
-- Example test cases (new IDs + new steps)
-- Review checklist
+## 2) Backend — Unit (utils)
 
-## KTPM Mapping Hints
-- Access control: /api/login, JWT middleware, admin/user separation
-- Product browsing: /api/get-all-product-user, /api/get-detail-product-by-id
-- Cart: /api/add-shopcart, /api/get-shop-cart-by-user-id
-- Orders: /api/create-new-order, /api/get-order-by-id
+| Test ID       | Unit Under Test         | Mô tả                              | Dữ liệu test          | Kết quả mong đợi                         | Mapping code/test                                |
+| ------------- | ----------------------- | ---------------------------------- | --------------------- | ---------------------------------------- | ------------------------------------------------ |
+| UT-BE-UTIL-01 | Password hashing        | Hash + compare password đúng       | password hợp lệ + sai | hash khác plain; compare true/false đúng | `ecomAPI/src/utils/authUtils.js` + tests/unit    |
+| UT-BE-UTIL-02 | Validate email/password | Kiểm tra email/password theo rule  | email sai, pass yếu   | trả false/throw đúng                     | `ecomAPI/src/utils/authUtils.js` + tests/unit    |
+| UT-BE-UTIL-03 | Product pricing         | Tính giá giảm, tìm kiếm/phân trang | price/percent/keyword | total đúng + paginate đúng               | `ecomAPI/src/utils/productUtils.js` + tests/unit |
+| UT-BE-UTIL-04 | Order total             | Tính tổng tiền + discount          | items + voucher       | total đúng                               | `ecomAPI/src/utils/orderUtils.js` + tests/unit   |
 
-## Next Action
-- Replace this outline with a newly-authored document/template and update docs/NOTICE_ADAPTATION.md with what changed.
+Ghi chú: backend report tổng hợp nằm ở `ecomAPI/jest-results.json`.
+
+## 3) Frontend — Unit (service wrappers + config)
+
+| Test ID      | Unit Under Test                 | Mô tả                   | Dữ liệu test            | Kết quả mong đợi                  | Mapping code/test                                        |
+| ------------ | ------------------------------- | ----------------------- | ----------------------- | --------------------------------- | -------------------------------------------------------- |
+| UT-FE-SVC-01 | `handleLoginService`            | Gọi đúng endpoint login | {email,password}        | gọi `POST /api/login`             | `eCommerce_Reactjs/src/services/userService.test.js`     |
+| UT-FE-SVC-02 | `getAllProductUser`             | Build query string đúng | limit/offset/keyword    | URL chứa params + keyword encoded | `eCommerce_Reactjs/src/services/userService.test.js`     |
+| UT-FE-SVC-03 | `addShopCartService`            | Post add to cart        | payload                 | gọi `POST /api/add-shopcart`      | `eCommerce_Reactjs/src/services/userService.test.js`     |
+| UT-FE-SVC-04 | `getAllShopCartByUserIdService` | Get cart by user        | id                      | gọi URL đúng                      | `eCommerce_Reactjs/src/services/userService.test.js`     |
+| UT-FE-SVC-05 | Axios baseURL                   | baseURL lấy từ env      | `REACT_APP_BACKEND_URL` | `instance.defaults.baseURL` đúng  | `eCommerce_Reactjs/src/axios.test.js`                    |
+| UT-FE-SVC-06 | Axios auth header               | gắn Bearer token        | token in localStorage   | request config có `Authorization` | `eCommerce_Reactjs/src/axios.test.js`                    |
+| UT-FE-SVC-07 | GHN mock order                  | Tạo mã GHN giả lập      | order data              | trả errCode 0 + orderCode fake    | `eCommerce_Reactjs/src/services/ghnService.test.js`      |
+| UT-FE-SVC-08 | Shipping options                | Map địa chỉ + fee       | province/district/ward  | trả option GHN available          | `eCommerce_Reactjs/src/services/shippingService.test.js` |
+
+## 4) Frontend — Unit (component)
+
+| Test ID      | Unit Under Test | Mô tả                         | Dữ liệu test        | Kết quả mong đợi               | Mapping code/test                                             |
+| ------------ | --------------- | ----------------------------- | ------------------- | ------------------------------ | ------------------------------------------------------------- |
+| UT-FE-CMP-01 | `ItemProduct`   | Render tên + link detail đúng | props id/name/price | link tới `/detail-product/:id` | `eCommerce_Reactjs/src/component/Product/ItemProduct.test.js` |
+
+## 5) Kết luận ngắn (phục vụ V-Model)
+
+- Unit tests đảm bảo module-level correctness (utils/service wrappers/component render).
+- Integration & System tests được mô tả ở các artefact riêng và triển khai qua Jest DB-real + Cypress.

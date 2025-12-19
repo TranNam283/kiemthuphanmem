@@ -5,7 +5,7 @@
 
 describe("Homepage - Search Functionality E2E Test", () => {
   beforeEach(() => {
-    cy.visit("http://localhost:3000/");
+    cy.visit("/");
   });
 
   it("Should load homepage successfully", () => {

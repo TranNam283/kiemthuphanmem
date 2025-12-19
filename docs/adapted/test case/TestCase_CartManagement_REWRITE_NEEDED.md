@@ -1,30 +1,35 @@
-﻿# REWRITE_NEEDED: TestCase_CartManagement
+﻿# Test Case — Cart Management — KTPM
 
-This file is a rewrite outline (not a rewrite) because the corresponding template in docs/ref was detected as COPIED_VERBATIM vs the reference repository.
+> Module: Cart (giỏ hàng)
+>
+> Mục tiêu: đảm bảo thao tác giỏ hàng đúng (thêm/xem/xoá) và validation quantity.
 
-## Provenance
-- Source (reference): D:\Projects\fullstack-vitejs-books\docs\tests\test case\TestCase_CartManagement.xlsx
-- Local copy (tracked as original): d:\Projects\ktpm\docs\ref\test case\TestCase_CartManagement.xlsx
-- Similarity evidence: alignedTokenPct=100%, lineOverlapPct=100%
+## 1) Phạm vi
 
-## Rewrite Instructions (must be original)
-- Rewrite the content to fit KTPM (e-commerce clothing) domain; avoid copying phrasing/structure verbatim.
-- Keep only generic testing concepts; re-derive examples, IDs, and scenarios from KTPM endpoints/features.
-- Prefer Vietnamese wording consistent with the rest of this repo.
+- `POST /api/add-shopcart`
+- `GET /api/get-all-shopcart-by-userId?id=...`
+- `DELETE /api/delete-item-shopcart`
+- (tuỳ) cập nhật quantity/size nếu có endpoint.
 
-## Proposed New Structure (suggestion)
-- Purpose & scope
-- Definitions (role, state, entities: product, cart, order, voucher, address)
-- Test data strategy
-- Test case format (new column set)
-- Example test cases (new IDs + new steps)
-- Review checklist
+## 2) Test data
 
-## KTPM Mapping Hints
-- Access control: /api/login, JWT middleware, admin/user separation
-- Product browsing: /api/get-all-product-user, /api/get-detail-product-by-id
-- Cart: /api/add-shopcart, /api/get-shop-cart-by-user-id
-- Orders: /api/create-new-order, /api/get-order-by-id
+- User đã login (token + userId)
+- ProductDetailSizeId tồn tại (id mẫu)
 
-## Next Action
-- Replace this outline with a newly-authored document/template and update docs/NOTICE_ADAPTATION.md with what changed.
+## 3) Bảng test case
+
+| Test Case ID | Tiêu đề                        | Pre-conditions           | Test Steps                                  | Test Data                               | Expected Result                | Actual Result | Status |
+| ------------ | ------------------------------ | ------------------------ | ------------------------------------------- | --------------------------------------- | ------------------------------ | ------------- | ------ |
+| TC-CART-01   | Add to cart thành công         | User login + size hợp lệ | POST add-shopcart                           | {userId,productdetailsizeId,quantity=1} | 200 + `errCode=0`              |               |        |
+| TC-CART-02   | Add to cart quantity=0 bị chặn | User login               | POST add-shopcart                           | quantity=0                              | 4xx/errCode validation         |               |        |
+| TC-CART-03   | Add to cart thiếu field        | User login               | POST add-shopcart thiếu productdetailsizeId | thiếu field                             | 4xx/errCode validation         |               |        |
+| TC-CART-04   | Xem giỏ hàng của user          | User login               | GET cart by userId                          | id=userId                               | 200 + list items (có thể rỗng) |               |        |
+| TC-CART-05   | Xem giỏ hàng khi chưa login    | -                        | GET cart                                    | không token                             | 401/403                        |               |        |
+| TC-CART-06   | Xoá item giỏ hàng thành công   | Có item trong cart       | DELETE delete-item-shopcart                 | {itemId}                                | 200 + item bị xoá              |               |        |
+| TC-CART-07   | Xoá item không thuộc user      | User A login             | DELETE item của user B                      | itemId khác owner                       | 403 hoặc errCode               |               |        |
+| TC-CART-08   | UI hiển thị giỏ hàng           | User login               | Mở trang `/shopcart`                        | -                                       | Bảng sản phẩm hiển thị đúng    |               |        |
+
+## 4) Mapping automation
+
+- Cypress smoke (UI): `eCommerce_Reactjs/cypress/e2e/cart-view.cy.js`.
+- FE unit tests: add/get/delete wrapper `eCommerce_Reactjs/src/services/userService.test.js`.

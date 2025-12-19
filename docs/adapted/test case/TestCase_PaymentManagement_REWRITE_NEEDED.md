@@ -1,30 +1,32 @@
-﻿# REWRITE_NEEDED: TestCase_PaymentManagement
+﻿# Test Case — Payment Management — KTPM
 
-This file is a rewrite outline (not a rewrite) because the corresponding template in docs/ref was detected as COPIED_VERBATIM vs the reference repository.
+> Module: Payment/Checkout
+>
+> Mục tiêu: kiểm tra lựa chọn phương thức thanh toán và các ràng buộc ở bước checkout.
 
-## Provenance
-- Source (reference): D:\Projects\fullstack-vitejs-books\docs\tests\test case\TestCase_PaymentManagement.xlsx
-- Local copy (tracked as original): d:\Projects\ktpm\docs\ref\test case\TestCase_PaymentManagement.xlsx
-- Similarity evidence: alignedTokenPct=100%, lineOverlapPct=100%
+## 1) Phạm vi
 
-## Rewrite Instructions (must be original)
-- Rewrite the content to fit KTPM (e-commerce clothing) domain; avoid copying phrasing/structure verbatim.
-- Keep only generic testing concepts; re-derive examples, IDs, and scenarios from KTPM endpoints/features.
-- Prefer Vietnamese wording consistent with the rest of this repo.
+- Checkout UI (frontend): chọn phương thức thanh toán, hiển thị tổng tiền.
+- Backend order create: `POST /api/create-new-order` có field paymentMethod (nếu có).
 
-## Proposed New Structure (suggestion)
-- Purpose & scope
-- Definitions (role, state, entities: product, cart, order, voucher, address)
-- Test data strategy
-- Test case format (new column set)
-- Example test cases (new IDs + new steps)
-- Review checklist
+Ghi chú: nếu dự án chưa tích hợp gateway thanh toán thật, các test “online payment callback” được đánh dấu planned.
 
-## KTPM Mapping Hints
-- Access control: /api/login, JWT middleware, admin/user separation
-- Product browsing: /api/get-all-product-user, /api/get-detail-product-by-id
-- Cart: /api/add-shopcart, /api/get-shop-cart-by-user-id
-- Orders: /api/create-new-order, /api/get-order-by-id
+## 2) Test data
 
-## Next Action
-- Replace this outline with a newly-authored document/template and update docs/NOTICE_ADAPTATION.md with what changed.
+- Giỏ hàng có 1–2 sản phẩm, quantity hợp lệ.
+- Ship fee cố định (hoặc lấy từ typeship).
+
+## 3) Bảng test case
+
+| Test Case ID | Tiêu đề | Pre-conditions | Test Steps | Test Data | Expected Result | Actual Result | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| TC-PAY-01 | Checkout chọn COD và đặt hàng | User login + có cart | Chọn COD → submit | paymentMethod=COD | Order tạo thành công |  |  |
+| TC-PAY-02 | Không chọn payment method (nếu bắt buộc) | User login + có cart | Submit không chọn | paymentMethod missing | UI báo lỗi hoặc backend reject |  |  |
+| TC-PAY-03 | Tổng tiền hiển thị đúng | User login + có cart | Mở checkout | items + shipFee | Total = sum + ship - discount (nếu có) |  |  |
+| TC-PAY-04 | Thay đổi phương thức thanh toán cập nhật UI | User login | Chọn method khác | COD/ONLINE | UI cập nhật đúng label/fee |  |  |
+| TC-PAY-05 | Online payment callback (planned) | Gateway configured | giả lập callback | payload callback | Order status cập nhật đúng |  | ⏳ |
+
+## 4) Mapping automation
+
+- Hiện tại ưu tiên: TC-PAY-01..03 ở mức System/Integration.
+- Nếu có gateway thật: tách workflow riêng (manual/nightly) để tránh flaky.

@@ -1,30 +1,56 @@
-﻿# REWRITE_NEEDED: 03_Test Design Workflow
+﻿# Test Design Workflow (KTPM) — Quy trình thiết kế và triển khai kiểm thử
 
-This file is a rewrite outline (not a rewrite) because the corresponding template in docs/ref was detected as COPIED_VERBATIM vs the reference repository.
+> Mục tiêu: mô tả quy trình “thiết kế → triển khai → chạy CI → triage → báo cáo” để minh chứng Chương 4 không chỉ là liệt kê test case.
 
-## Provenance
-- Source (reference): D:\Projects\fullstack-vitejs-books\docs\tests\TestDesign\03_Test Design Workflow.xlsx
-- Local copy (tracked as original): d:\Projects\ktpm\docs\ref\TestDesign\03_Test Design Workflow.xlsx
-- Similarity evidence: alignedTokenPct=100%, lineOverlapPct=100%
+## 1) Workflow tổng quan
 
-## Rewrite Instructions (must be original)
-- Rewrite the content to fit KTPM (e-commerce clothing) domain; avoid copying phrasing/structure verbatim.
-- Keep only generic testing concepts; re-derive examples, IDs, and scenarios from KTPM endpoints/features.
-- Prefer Vietnamese wording consistent with the rest of this repo.
+1. **Thu thập yêu cầu & luồng nghiệp vụ**
+	- Input: tài liệu yêu cầu, UI flow, DB schema (`ecom.sql`), routes/controllers.
+	- Output: danh sách module/luồng ưu tiên.
 
-## Proposed New Structure (suggestion)
-- Purpose & scope
-- Definitions (role, state, entities: product, cart, order, voucher, address)
-- Test data strategy
-- Test case format (new column set)
-- Example test cases (new IDs + new steps)
-- Review checklist
+2. **Lập Scenario list (mức cao)**
+	- Output: `docs/adapted/Test_Scenario_REWRITE_NEEDED.md`.
+	- Mục đích: gom theo module và định hướng mức kiểm thử (API/UI/perf).
 
-## KTPM Mapping Hints
-- Access control: /api/login, JWT middleware, admin/user separation
-- Product browsing: /api/get-all-product-user, /api/get-detail-product-by-id
-- Cart: /api/add-shopcart, /api/get-shop-cart-by-user-id
-- Orders: /api/create-new-order, /api/get-order-by-id
+3. **Thiết kế Test Case chi tiết**
+	- Output: `docs/adapted/test case/TestCase_*.md`.
+	- Mỗi test case có: precondition, steps, test data, expected, status.
 
-## Next Action
-- Replace this outline with a newly-authored document/template and update docs/NOTICE_ADAPTATION.md with what changed.
+4. **Chọn kỹ thuật test design và bổ sung negative/boundary**
+	- EP/BVA/Decision Table/State Transition.
+	- Bắt buộc có nhóm negative: thiếu token, input rỗng, id không tồn tại.
+
+5. **Ánh xạ sang automation (nếu phù hợp)**
+	- Backend: Jest/Supertest; DB-real tests cho các case cần xác nhận ORM/DB.
+	- Frontend: Jest (service wrappers + component) + Cypress smoke.
+
+6. **Chạy CI và thu minh chứng**
+	- CI chạy trên GitHub Actions, upload artifacts/logs.
+	- Khi fail: tự động tạo Issue/PR comment; fallback ghi vào `docs/CI_FAILURES.md`.
+
+7. **Triage lỗi & cập nhật trạng thái test case**
+	- Nếu là bug: tạo issue + fix + thêm regression test.
+	- Nếu là flaky: giảm phụ thuộc môi trường (stub hoặc tách nightly).
+
+8. **Tổng hợp Test Report**
+	- Output: `docs/adapted/test report_REWRITE_NEEDED.md` + screenshot CI.
+
+## 2) RACI (ai làm gì)
+
+| Công việc | Dev BE | Dev FE | Tester/QA (trong nhóm) | Trưởng nhóm |
+| --- | --- | --- | --- | --- |
+| Scenario list | R | R | A | A |
+| Test case chi tiết | R | R | A | A |
+| Backend automation | R | C | C | A |
+| Frontend unit tests | C | R | C | A |
+| Cypress E2E smoke | C | R | C | A |
+| CI/CD + artifacts | R | R | C | A |
+| Test report + evidence | C | C | R | A |
+
+R = Responsible, A = Accountable, C = Consulted.
+
+## 3) Quy tắc “điểm cao”
+
+- Mỗi artefact phải truy vết được: Scenario → Test case → Automation → Evidence (CI/log).
+- Những phần chưa tự động hoá phải ghi rõ lý do (môi trường, dữ liệu) và có kế hoạch (planned).
+- Ưu tiên minh chứng chạy thật (CI logs/artifacts) thay vì chỉ mô tả.

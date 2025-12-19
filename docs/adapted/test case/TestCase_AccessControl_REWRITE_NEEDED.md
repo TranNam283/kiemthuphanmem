@@ -1,30 +1,39 @@
-﻿# REWRITE_NEEDED: TestCase_AccessControl
+﻿# Test Case — Access Control (Auth/AuthZ) — KTPM
 
-This file is a rewrite outline (not a rewrite) because the corresponding template in docs/ref was detected as COPIED_VERBATIM vs the reference repository.
+> Module: Auth & Access Control
+>
+> Mục tiêu: đảm bảo cơ chế đăng nhập và phân quyền (user/admin) hoạt động đúng, lỗi trả về “đúng cách”.
 
-## Provenance
-- Source (reference): D:\Projects\fullstack-vitejs-books\docs\tests\test case\TestCase_AccessControl.xlsx
-- Local copy (tracked as original): d:\Projects\ktpm\docs\ref\test case\TestCase_AccessControl.xlsx
-- Similarity evidence: alignedTokenPct=100%, lineOverlapPct=100%
+## 1) Phạm vi
 
-## Rewrite Instructions (must be original)
-- Rewrite the content to fit KTPM (e-commerce clothing) domain; avoid copying phrasing/structure verbatim.
-- Keep only generic testing concepts; re-derive examples, IDs, and scenarios from KTPM endpoints/features.
-- Prefer Vietnamese wording consistent with the rest of this repo.
+- AuthN: `POST /api/login`
+- AuthZ: các endpoint cần token/role (tuỳ cấu hình backend)
+- JWT middleware: header `Authorization: Bearer <token>`
 
-## Proposed New Structure (suggestion)
-- Purpose & scope
-- Definitions (role, state, entities: product, cart, order, voucher, address)
-- Test data strategy
-- Test case format (new column set)
-- Example test cases (new IDs + new steps)
-- Review checklist
+Giả định role:
 
-## KTPM Mapping Hints
-- Access control: /api/login, JWT middleware, admin/user separation
-- Product browsing: /api/get-all-product-user, /api/get-detail-product-by-id
-- Cart: /api/add-shopcart, /api/get-shop-cart-by-user-id
-- Orders: /api/create-new-order, /api/get-order-by-id
+- User thường: `R2`
+- Admin: `R1`
 
-## Next Action
-- Replace this outline with a newly-authored document/template and update docs/NOTICE_ADAPTATION.md with what changed.
+## 2) Test data
+
+- User hợp lệ: `user@example.com` / `P@ssw0rd123` (seed hoặc mock)
+- Admin hợp lệ: `admin@example.com` / `Admin@123` (seed hoặc mock)
+
+## 3) Bảng test case
+
+| Test Case ID | Tiêu đề | Pre-conditions | Test Steps | Test Data | Expected Result | Actual Result | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| TC-AUTH-01 | Login thành công (user) | Tồn tại user | 1) Gọi `POST /api/login` 2) Lưu token | email+password đúng | Trả `errCode=0` + có token/user |  |  |
+| TC-AUTH-02 | Login sai mật khẩu | User tồn tại | Gọi `POST /api/login` với pass sai | pass sai | Trả lỗi rõ ràng (`errCode!=0` hoặc 4xx) |  |  |
+| TC-AUTH-03 | Login thiếu email | - | Gọi login thiếu email | thiếu email | Trả lỗi validation |  |  |
+| TC-AUTH-04 | Login thiếu password | - | Gọi login thiếu password | thiếu password | Trả lỗi validation |  |  |
+| TC-AUTH-05 | Request không token bị chặn | Endpoint yêu cầu login | 1) Gọi endpoint cần token 2) Không set header | không token | 401/403 |  |  |
+| TC-AUTH-06 | Token sai/expired bị chặn | Endpoint yêu cầu login | Gọi endpoint với token giả | token invalid | 401/403 |  |  |
+| TC-AUTH-07 | User thường bị chặn ở admin endpoint | Có token role user | Gọi endpoint admin | token user | 403 |  |  |
+| TC-AUTH-08 | Admin truy cập admin endpoint | Có token role admin | Gọi endpoint admin | token admin | 200 + response hợp lệ |  |  |
+
+## 4) Gợi ý tự động hoá (mapping)
+
+- Cypress (System/UI): login smoke `eCommerce_Reactjs/cypress/e2e/auth-login.cy.js`.
+- Jest/Supertest (API/Contract): nên ưu tiên TC-AUTH-05..08 (missing token/role) vì ít flaky.

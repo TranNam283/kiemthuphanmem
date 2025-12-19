@@ -18,8 +18,9 @@ This repository contains some testing templates and performance-testing ideas th
 
 - `docs/adapted/**`
 
-  - Purpose: **rewrite-needed outlines** (`*_REWRITE_NEEDED.md`) that describe how to produce new, original KTPM (e-commerce clothing) documents based on concepts only.
-  - Status: outlines are safe to keep as they do not reproduce full templates; they guide the creation of new templates and test artifacts.
+  - Purpose: **newly-authored KTPM test artifacts** written in Vietnamese, derived from project requirements/endpoints.
+  - Status: these files are intended as the **deliverable** versions (original content). Some filenames keep the `_REWRITE_NEEDED` suffix for historical tracking, but the contents have been rewritten.
+  - Notes: if needed for submission, these Markdown artefacts can be exported to Word/PDF.
 
 - `performance/k6/**`
   - Purpose: load/stress scripts for this project.
@@ -34,3 +35,8 @@ This repository contains some testing templates and performance-testing ideas th
 ## Evidence
 
 See `docs/DOCS_PROVENANCE_REPORT.md` (generated) and `docs/DOCS_PROVENANCE_REPORT.json` (machine-readable).
+
+## What changed recently
+
+- Rewrote the adapted artefacts (scenario, test plan, test report, unit test inventory, module test cases, review checklist) to be KTPM-specific.
+- Added Acceptance checklist (manual UAT) to close the V-Model acceptance layer.

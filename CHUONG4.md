@@ -2,23 +2,23 @@
 
 > **Đồ án môn**: Kiểm thử phần mềm  
 > **Dự án**: eCommerce Full Stack (React.js + Node.js + MySQL)  
-> **Cập nhật**: 08/12/2025  
+> **Cập nhật**: 18/12/2025  
 > **Số trang mục tiêu**: 25-30 trang (chiếm ~30% của 80 trang tổng)
 
 ---
 
 ## 📋 MỤC LỤC CHƯƠNG 4
 
-| STT | Nội dung                         | Số trang     | Trạng thái           |
-| --- | -------------------------------- | ------------ | -------------------- |
-| 4.1 | Tổng quan                        | 2 trang      | ⏳ Cần viết          |
-| 4.2 | Phân tích khung nhìn V-Model     | 3 trang      | ⏳ Cần viết          |
-| 4.3 | Phân tích khung nhìn Agile/CI-CD | 4 trang      | ✅ **ĐÃ TRIỂN KHAI** |
-| 4.4 | Phân tích khung nhìn phương pháp | 5 trang      | ⏳ Cần viết          |
-| 4.5 | Phân tích kỹ thuật nâng cao      | 4 trang      | ⏳ Cần viết          |
-| 4.6 | Triển khai Test (Implementation) | 6 trang      | ✅ **ĐÃ TRIỂN KHAI** |
-| 4.7 | Kết quả và đánh giá              | 3 trang      | ⏳ Đợi CI/CD pass    |
-|     | **TỔNG**                         | **27 trang** |                      |
+| STT | Nội dung                         | Số trang     | Trạng thái                 |
+| --- | -------------------------------- | ------------ | -------------------------- |
+| 4.1 | Tổng quan                        | 2 trang      | ✅ Đã viết                 |
+| 4.2 | Phân tích khung nhìn V-Model     | 3 trang      | ✅ Đã viết                 |
+| 4.3 | Phân tích khung nhìn Agile/CI-CD | 4 trang      | ✅ **ĐÃ TRIỂN KHAI**       |
+| 4.4 | Phân tích khung nhìn phương pháp | 5 trang      | ✅ Đã viết                 |
+| 4.5 | Phân tích kỹ thuật nâng cao      | 4 trang      | ✅ Đã viết                 |
+| 4.6 | Triển khai Test (Implementation) | 6 trang      | ✅ **ĐÃ TRIỂN KHAI**       |
+| 4.7 | Kết quả và đánh giá              | 3 trang      | ✅ Đã viết (cập nhật hình) |
+|     | **TỔNG**                         | **27 trang** |                            |
 
 ---
 
@@ -70,19 +70,12 @@
 
 Trong repo, nhóm triển khai kiểm thử tự động bằng **Jest** (unit/integration) và **Supertest** (API-Contract/smoke) để tạo minh chứng PASS/FAIL và logs có thể lặp lại.
 
-**Kết quả chạy thật (local, khi tắt DB-real / `RUN_DB_TESTS=0`): 9 test suites – 88 tests – PASS** (các suite DB-real sẽ bị skip).
+**Minh chứng chạy thật (bám theo report trong repo):** file `ecomAPI/jest-results.json` lưu lại kết quả một lần chạy gần nhất.
 
-Ngoài ra có thêm nhóm **DB thật (MySQL qua Docker)**, chỉ chạy khi bật biến môi trường `RUN_DB_TESTS=1` (mặc định sẽ bị skip để tránh fail khi chưa có DB):
+- Tổng quan: **17 test suites – 116 tests**
+- Kết quả: **109 PASS – 7 PENDING – 0 FAIL**
 
-- Khi bật DB thật (`RUN_DB_TESTS=1`): tổng **19 test suites – 122 tests – GREEN** (trong đó **106 PASS**, **16 SKIP** là các test mock đã được “chuyển” sang DB-real để tránh chạy trùng khi bật DB).
-- DB-real: **10 suites – 34 tests – PASS** (Auth + User/Admin + User/Profile + Product list/detail/admin/new/feature + Allcode + ShopCart + Order + Voucher)
-
-Phân loại theo nhóm test (tính theo số lượng tests **PASS** trong Jest report khi bật DB):
-
-- Unit: **32**
-- API-Contract/Mocked (Supertest + mock controllers/DB): **34**
-- Integration (không DB): **6**
-- Integration DB-real (MySQL): **34**
+Ghi chú về **PENDING**: đây là các test case đã “thiết kế trước” nhưng chưa assert đầy đủ trong bộ API-contract mock (ví dụ nhóm Product/Cart), được giữ lại để thể hiện lộ trình mở rộng test thay vì xoá.
 
 Ghi nhận: trong quá trình thêm DB-real tests, phát hiện lỗi ở API `/api/get-detail-user-by-email` (service query sai + chưa export hàm) và đã sửa để endpoint chạy đúng.
 
@@ -149,23 +142,25 @@ module.exports = {
 │ TOTAL                 │  100%   │   100%   │   100%  │   100%  │
 └─────────────────────────────────────────────────────────────┘
 
-✅ Coverage threshold (80%) - PASSED
+✅ Coverage threshold (80%) - configured (CI enforces)
 ```
 
 ---
 
 ### 4. GitHub Actions Workflow Status
 
-| Workflow       | Status         | Lần cuối chạy |
-| -------------- | -------------- | ------------- |
-| Backend CI/CD  | ⏳ Đang verify | 08/12/2025    |
-| Frontend CI/CD | ⏳ Đang verify | 08/12/2025    |
+| Workflow       | Status                     | Lần cuối chạy |
+| -------------- | -------------------------- | ------------- |
+| Backend CI/CD  | ✅ Có workflow + artifacts | Xem Actions   |
+| Frontend CI/CD | ✅ Có workflow + artifacts | Xem Actions   |
 
 **Link kiểm tra**: https://github.com/TranNam283/kiemthuphanmem/actions
 
 ---
 
 ## NỘI DUNG CHI TIẾT (PHỤC VỤ WORD)
+
+> Ghi chú: Repo “điểm cao” không có file Chương 4 dạng Markdown riêng; phần “Test Design” của họ thể hiện qua bộ template Office ở `docs/tests/**` và bộ automated tests (multi-layer + Selenium). Mình đã tóm tắt cấu trúc/fields (không copy nội dung) tại: `docs/CHUONG4_REFERENCE_ANALYSIS.md`.
 
 ### 4.1 TỔNG QUAN
 
@@ -190,10 +185,12 @@ Chương 4 tập trung vào **thiết kế kiểm thử** (test design) và các
 
 Trong phạm vi đồ án, nhóm chốt **baseline = 90 test case** để đảm bảo Chương 4 có quy mô đủ lớn và có thể triển khai theo mức độ ưu tiên:
 
-- **78 test case đã hiện thực và có kết quả PASS**: gồm Unit/Integration (TC01–TC27) và API-Contract ưu tiên High/Medium (ví dụ: TC28–TC29, TC32–TC35, TC38–TC39, TC40–TC44, TC45–TC51, TC52–TC53, TC54–TC55, TC57–TC61, TC62–TC68, TC69–TC74, TC75–TC79, TC80–TC82, TC89).
-- **12 test case ở trạng thái thiết kế (planned)**: còn lại trong TC28–TC90, ưu tiên hiện thực theo rủi ro (High trước).
+- Một phần test case đã được **tự động hoá** (unit/integration/api-contract/DB-real) và có minh chứng chạy thật.
+- Phần còn lại được giữ ở trạng thái **planned** để thể hiện phạm vi thiết kế và roadmap mở rộng theo rủi ro.
 
 Danh sách test case chi tiết (ID, mục tiêu, dữ liệu, expected, loại test, kỹ thuật, ưu tiên) được trình bày tại: `docs/PHU_LUC_A_TEST_CASES.md`.
+
+Ngoài ra, để dễ truy vết “test case thiết kế ↔ test script”, nhóm dùng traceability dạng file ở `docs/tests/test-cases.csv`.
 
 #### 4.1.4 Làm sao biết “test chạy ổn”?
 
@@ -236,12 +233,14 @@ Lưu ý: Giảng viên thường đánh giá cao **bằng chứng CI** vì lặp
 
 **Bảng ánh xạ V-Model với dự án:**
 
-| Giai đoạn thiết kế | Giai đoạn test      | Test đã triển khai             |
-| ------------------ | ------------------- | ------------------------------ |
-| Requirements       | Acceptance Testing  | ⏳ Manual testing              |
-| System Design      | System Testing      | ⏳ E2E (Cypress)               |
-| Architecture       | Integration Testing | ✅ orderService.test.js        |
-| Module Design      | Unit Testing        | ✅ authService, productService |
+> Lưu ý: Các **TCxx** bên dưới là **ID test case thiết kế (baseline)**. Trạng thái chạy thật (PASS/PENDING/FAIL) được tổng hợp ở mục 4.7 theo report (ví dụ `ecomAPI/jest-results.json`) và log CI.
+
+| Giai đoạn thiết kế | Giai đoạn test      | Test đã triển khai                                                                                   |
+| ------------------ | ------------------- | ---------------------------------------------------------------------------------------------------- |
+| Requirements       | Acceptance Testing  | ⏳ Manual testing                                                                                    |
+| System Design      | System Testing      | ✅ E2E smoke (Cypress): `homepage.cy.js`, `auth-login.cy.js`, `shop-browse.cy.js`, `cart-view.cy.js` |
+| Architecture       | Integration Testing | ✅ Integration (Jest): `orderService.test.js` + nhóm `*.mysql.int.test.js`                           |
+| Module Design      | Unit Testing        | ✅ Unit (Jest): `authService.test.js`, `productService.test.js`, `orderService.test.js`              |
 
 #### 4.2.1 Ánh xạ artefact thực tế của dự án và test case (baseline)
 
@@ -273,18 +272,18 @@ Ma trận truy vết giúp trả lời 2 câu hỏi trong Test Design:
 
 Danh sách truy vết chi tiết tới từng endpoint/test data được đặt trong Phụ lục A để dễ quản lý.
 
-#### 4.2.4 Mapping test case ↔ test scripts (minh chứng tự động hoá)
+#### 4.2.3 Mapping test case ↔ test scripts (minh chứng tự động hoá)
 
-Để đảm bảo Chương 4 có tính “thiết kế → triển khai”, các test case đã hiện thực được ánh xạ trực tiếp đến file test (tự động hoá):
+Để đảm bảo Chương 4 có tính “thiết kế → triển khai”, nhóm ánh xạ **baseline test case** với **test scripts hiện có**. Nguồn tổng hợp chính: `docs/tests/test-cases.csv`.
 
 - **TC35, TC51, TC54, TC59, TC62** → `ecomAPI/tests/api/authz.contract.test.js`
 - **TC38–TC39, TC45–TC50, TC80–TC82, TC89** → `ecomAPI/tests/api/authz.roles.contract.test.js`
 - **TC40–TC44** → `ecomAPI/tests/api/product.contract.test.js`
 - **TC52–TC53, TC55, TC57–TC58, TC60–TC61, TC63–TC74, TC75–TC79** → `ecomAPI/tests/api/cart-order-voucher.contract.test.js`
 
-Các test này tập trung vào **contract + middleware auth/authz** (status code + rule phân quyền). Phần nghiệp vụ/DB (tạo sản phẩm, voucher, …) vẫn được giữ trong nhóm test planned hoặc cần môi trường DB để triển khai đầy đủ.
+Các test này tập trung vào **contract + middleware auth/authz** (status code + rule phân quyền). Một số test case trong nhóm contract được để trạng thái **PENDING** (xem `ecomAPI/jest-results.json`) để thể hiện phần “planned/đang hoàn thiện” trong baseline.
 
-#### 4.2.3 Tiêu chí chấp nhận theo mức kiểm thử
+#### 4.2.4 Tiêu chí chấp nhận theo mức kiểm thử
 
 - **Unit/Integration (CI bắt buộc)**: tất cả test PASS; coverage không thấp hơn ngưỡng tối thiểu (theo cấu hình).
 - **API/Contract (ưu tiên High)**: đúng status code, đúng quy tắc auth/authz, response ổn định với frontend.
@@ -398,8 +397,8 @@ Mục tiêu của phần này là chuyển từ “chiến lược kiểm thử�
 
 Trong phạm vi đồ án, nhóm chốt **baseline = 90 test case**:
 
-- **TC01–TC27**: đã hiện thực (Unit/Integration) và có kết quả PASS.
-- **TC28–TC90**: test case thiết kế (planned) cho API/Contract, Integration, System/E2E và phi chức năng, ưu tiên theo ma trận rủi ro.
+- Một phần đã được hiện thực thành test tự động (unit/integration/api-contract/DB-real) và có report chạy thật.
+- Phần còn lại là test case thiết kế (planned) cho System/E2E và phi chức năng, ưu tiên theo ma trận rủi ro.
 
 Toàn bộ danh sách test case (có mô tả cụ thể theo bảng) được trình bày tại: `docs/PHU_LUC_A_TEST_CASES.md`.
 
@@ -410,6 +409,35 @@ Toàn bộ danh sách test case (có mô tả cụ thể theo bảng) được t
 - **Hộp xám**: dùng cho Integration (service ↔ DB, kiểm tra tính nhất quán dữ liệu).
 
 Trong các bảng test case, cột **Ưu tiên** được xác định theo: _Impact_ (mức ảnh hưởng), _Likelihood_ (khả năng xảy ra), và _Exposure_ (mức phơi bày endpoint).
+
+#### 4.4.5 Các kỹ thuật thiết kế test áp dụng cho KTPM
+
+Để đảm bảo Chương 4 có tính “thiết kế” thay vì chỉ “liệt kê case”, nhóm áp dụng các kỹ thuật test design phổ biến và gắn trực tiếp vào module/endpoint của dự án:
+
+1. **Phân lớp tương đương (Equivalence Partitioning – EP)**
+
+- Áp dụng cho các input có miền giá trị rộng: email/password, quantity, limit/offset, status.
+- Ví dụ: `POST /api/login` chia lớp: email hợp lệ/không hợp lệ; mật khẩu đúng/sai; account bị khoá.
+
+2. **Giá trị biên (Boundary Value Analysis – BVA)**
+
+- Áp dụng cho `quantity`, `limit`, `offset`, `price range`, và các ID.
+- Ví dụ: `POST /api/add-shopcart` với `quantity` ở biên: 0, 1, giá trị lớn bất thường; hoặc thiếu field.
+
+3. **Bảng quyết định (Decision Table)**
+
+- Áp dụng cho **Auth/AuthZ** và các rule nhiều điều kiện.
+- Ví dụ: truy cập admin endpoint phụ thuộc: (có token? token hợp lệ? role admin?) → 401/403/200.
+
+4. **Chuyển trạng thái (State Transition)**
+
+- Áp dụng cho luồng đơn hàng: pending → processing → shipped → completed/cancelled (tuỳ thiết kế).
+- Thiết kế test case theo các transition hợp lệ/không hợp lệ (ví dụ: không cho nhảy từ pending → completed nếu thiếu bước xử lý).
+
+5. **Negative testing & robustness**
+
+- Thiết kế các test case “xấu” bắt buộc có trong baseline: thiếu token, token sai, thiếu field, id không tồn tại, dữ liệu rỗng.
+- Nhóm test API-contract hiện tại tập trung mạnh vào lớp này để đảm bảo backend “fail đúng cách” (status code + errCode).
 
 ### 4.5 PHÂN TÍCH KỸ THUẬT NÂNG CAO (4 trang)
 
@@ -429,9 +457,9 @@ Trong các bảng test case, cột **Ưu tiên** được xác định theo: _Im
 - 70% Automation (Unit + Integration + API)
 - 30% Manual (UI/UX + Exploratory)
 
-#### 4.5.2 AI trong kiểm thử
+#### 4.5.2 AI hỗ trợ trong kiểm thử (có kiểm soát)
 
-**Cách sử dụng ChatGPT/Copilot:**
+AI (ví dụ Copilot/ChatGPT) chỉ được dùng như **công cụ hỗ trợ** (gợi ý test ideas, gợi ý skeleton test), còn nội dung cuối cùng phải được nhóm tự kiểm chứng bằng chạy test thật + đối chiếu repo.
 
 1. **Generate test cases từ requirements**
 
@@ -454,27 +482,14 @@ Prompt: "Viết Jest test cho hàm calculateDiscount(price, percent)"
 Prompt: "Phân tích test này có cover đủ edge cases không?"
 ```
 
-#### 4.5.3 Tự động hóa quy trình (n8n, Make.com)
+#### 4.5.3 Tự động hoá quy trình triage khi CI fail (đã triển khai)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│              n8n WORKFLOW - TEST AUTOMATION                  │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│   [GitHub Webhook]                                           │
-│        ↓                                                     │
-│   [Trigger Test Suite]                                       │
-│        ↓                                                     │
-│   [Parse Test Results]                                       │
-│        ↓                                                     │
-│   ┌─────────┬─────────┐                                     │
-│   │  PASS   │  FAIL   │                                     │
-│   └────┬────┴────┬────┘                                     │
-│        ↓         ↓                                          │
-│   [Slack OK] [Slack Alert + Create Jira Ticket]             │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
-```
+Trong dự án, nhóm triển khai cơ chế “fail là có người xử” ngay trên GitHub Actions:
+
+- Khi job test FAIL: workflow tự **upload artifact logs** + tự **tạo GitHub Issue** và (nếu là PR) **comment vào PR**.
+- Nếu quyền tạo Issue bị chặn: workflow fallback ghi vào `docs/CI_FAILURES.md` và tạo PR để lưu log.
+
+Ý nghĩa đối với Chương 4: ngoài “thiết kế test case”, nhóm còn thiết kế **quy trình xử lý lỗi** (test triage) để đảm bảo CI/CD có giá trị thực tế.
 
 ### 4.6 TRIỂN KHAI TEST (6 trang) ⭐ ĐÃ LÀM
 
@@ -507,7 +522,7 @@ describe("Auth Service - Password Hashing", () => {
 ```javascript
 describe("Order Service - Integration", () => {
   test("Should create order successfully", async () => {
-    const items = [{ id: 1, name: "Laptop", price: 1000, quantity: 1 }];
+    const items = [{ id: 1, name: "Áo thun", price: 199000, quantity: 1 }];
     const order = await orderService.createOrder(1, items);
 
     expect(order.status).toBe("pending");
@@ -521,24 +536,19 @@ describe("Order Service - Integration", () => {
 **Backend CI/CD Workflow:**
 
 ```yaml
-# .github/workflows/backend-ci.yml
-name: Backend CI/CD
-
-on:
-  push:
-    branches: [main, develop]
-
+# .github/workflows/backend-ci.yml (rút gọn)
 jobs:
   test:
-    runs-on: ubuntu-latest
     services:
       mysql:
         image: mysql:8.0
     steps:
       - uses: actions/checkout@v3
       - run: npm ci
-      - run: npm run test:unit
-      - run: npm run test:integration
+      - run: npm run test:unit -- --json --outputFile=ci-jest-unit.json
+      - run: npm run test:integration -- --json --outputFile=ci-jest-integration.json
+      - run: npm run test:db -- --json --outputFile=ci-jest-db.json
+      - uses: actions/upload-artifact@v4
 ```
 
     #### 4.6.4 Triển khai môi trường demo bằng Railway (phục vụ kiểm thử hệ thống)
@@ -581,15 +591,83 @@ jobs:
 
 ### 4.7 KẾT QUẢ VÀ ĐÁNH GIÁ (3 trang)
 
-> ⏳ **CHỜ CẬP NHẬT SAU KHI CI/CD PASS**
+Phần này tổng hợp kết quả dựa trên **minh chứng chạy thật** trong repo (logs/artifacts/Jest report). Các hình ảnh (screenshot GitHub Actions) có thể bổ sung khi chụp từ trang Actions.
 
-**Dự kiến nội dung:**
+#### 4.7.1 Tổng hợp kết quả backend (Jest/Supertest)
 
-- Screenshot GitHub Actions pass ✅
-- Coverage report
-- Bảng tổng hợp test results
-- Lessons learned
-- Đề xuất cải tiến
+Nguồn: `ecomAPI/jest-results.json`.
+
+| Hạng mục    | Giá trị |
+| ----------- | ------- |
+| Test suites | 17      |
+| Total tests | 116     |
+| PASS        | 109     |
+| PENDING     | 7       |
+| FAIL        | 0       |
+
+Các test PENDING hiện nằm chủ yếu ở nhóm API-contract mock (ví dụ: TC43, TC44, TC52, TC53, TC55, TC57, TC58). Đây là các case đã có trong baseline nhưng chưa “đóng” đầy đủ bằng assert.
+
+#### 4.7.2 Kết quả frontend (React tests) và E2E smoke (Cypress)
+
+- Frontend unit test được chạy trong workflow `Frontend CI/CD` (step `npm test -- --coverage --watchAll=false`). Minh chứng là log step và artifact build.
+- E2E smoke được tự động hoá bằng Cypress và **chạy trong CI** (workflow `Frontend CI/CD`) với các kịch bản:
+  - `eCommerce_Reactjs/cypress/e2e/homepage.cy.js` (load trang)
+  - `eCommerce_Reactjs/cypress/e2e/auth-login.cy.js` (login – stub API)
+  - `eCommerce_Reactjs/cypress/e2e/shop-browse.cy.js` (browse shop – stub product list)
+  - `eCommerce_Reactjs/cypress/e2e/cart-view.cy.js` (view cart – stub cart + shipping)
+
+Ghi chú: các E2E smoke dùng `cy.intercept()` để stub API nhằm giảm phụ thuộc backend/DB và giảm flaky trên CI.
+
+#### 4.7.3 Kết quả kiểm thử hiệu năng (k6)
+
+Kịch bản k6 nằm trong `performance/k6/` gồm:
+
+- `load-test.js`: mô phỏng duyệt sản phẩm + (tuỳ chọn) login và add-to-cart.
+- `stress-test.js`: tăng tải để quan sát hệ thống dưới áp lực.
+
+Mục tiêu phần này là chứng minh nhóm có artefact kiểm thử phi chức năng và có thể chạy lặp lại bằng cấu hình env (`BASE_URL`, `K6_USER_EMAIL`, `K6_USER_PASSWORD`).
+
+#### 4.7.4 Defect/Lỗi đã phát hiện trong quá trình thiết kế & triển khai test
+
+Trong quá trình bổ sung DB-real tests, nhóm phát hiện lỗi ở API `/api/get-detail-user-by-email` (service query sai + chưa export hàm) và đã sửa để endpoint hoạt động đúng. Đây là ví dụ của việc test design giúp “bóc” lỗi logic/service thay vì chỉ kiểm tra UI.
+
+#### 4.7.5 Đánh giá và hạn chế
+
+Điểm mạnh:
+
+- Có **CI chạy thật** (backend + frontend), có logs/artifacts và cơ chế triage khi fail.
+- Backend test có cả lớp **DB-real** (MySQL service trong CI), giúp tăng độ tin cậy.
+- Có đủ lớp kiểm thử: unit/integration/api-contract + smoke + k6.
+
+Hạn chế:
+
+- Một số test case API-contract còn trạng thái **PENDING** (chưa assert đầy đủ).
+- E2E Cypress mới ở mức smoke (login/browse/cart), chưa cover đầy đủ checkout/payment và các edge cases UI.
+
+#### 4.7.6 Đề xuất cải tiến
+
+- Chuyển các test PENDING thành PASS bằng cách hoàn thiện mock/controller hoặc chuyển sang DB-real khi phù hợp.
+- Mở rộng Cypress theo các luồng High-risk (login → cart → checkout) và cân nhắc chạy nightly CI (không block PR).
+- Bổ sung test security ở mức request validation (payload size, missing fields, rate limiting nếu có).
+
+#### 4.7.7 So sánh với repo “điểm cao” (gap analysis về kiểm thử)
+
+Phần này đối chiếu nhanh giữa repo của nhóm và repo “điểm cao” (tham khảo cấu trúc minh chứng Test Design + automated tests, đã tóm tắt tại `docs/CHUONG4_REFERENCE_ANALYSIS.md`). Mục tiêu là trả lời rõ: **nhóm đã có test tự động chưa, integration test tới đâu, và còn thiếu gì để “bắt kịp”**.
+
+| Hạng mục              | Repo KTPM (repo hiện tại)                                                                                                                         | Repo “điểm cao” (tham khảo)                               | Nhận xét / khoảng cách                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Test design artefacts | Baseline test case + phụ lục + traceability (`docs/PHU_LUC_A_TEST_CASES.md`, `docs/tests/*.csv`)                                                  | Bộ template Office (Scenario/TestCase/TestReport) rõ form | Mình mạnh ở dạng text/CSV, nhưng yếu về “bộ template chuẩn” nếu GV ưu tiên hình thức Office           |
+| Backend unit          | Có (Jest): `ecomAPI/tests/unit/*.test.js`                                                                                                         | Có (multi-layer)                                          | Tương đồng về ý tưởng; repo điểm cao thường có nhiều lớp/độ phủ rộng hơn                              |
+| Integration / DB-real | Có DB-real với MySQL thật (gated `RUN_DB_TESTS=1`), có MySQL service trong CI: `ecomAPI/tests/integration/*.mysql.int.test.js` + workflow backend | Thường có integration đa lớp                              | Đây là điểm mạnh của KTPM vì có “run với DB thật” và có thể lặp lại trên CI                           |
+| API contract / AuthZ  | Có contract tests (Supertest) tập trung auth/authz/roles: `ecomAPI/tests/api/*.contract.test.js`                                                  | Tuỳ repo; thường có integration/E2E                       | KTPM đang làm tốt phần “negative/authz” ở layer API                                                   |
+| Frontend unit         | Có nhưng còn ít: `eCommerce_Reactjs/src/App.test.js`                                                                                              | Thường nhiều hơn (component/service)                      | Đây là gap lớn: thiếu test component/state/edge cases                                                 |
+| E2E/UI                | Có Cypress E2E smoke (homepage/login/browse/cart) và **đã chạy trong CI**                                                                         | Thường có E2E/UI automation nhiều hơn (có thể Selenium)   | Đã có baseline tự động hoá UI; gap còn lại là mở rộng checkout/payment + tăng độ phủ luồng/edge cases |
+| Performance           | Có k6 artefact: `performance/k6/load-test.js`, `performance/k6/stress-test.js`                                                                    | Có thể có performance scripts                             | Gap chủ yếu là “chạy & báo cáo định kỳ” (nightly/CI), không phải thiếu script                         |
+
+Kết luận ngắn:
+
+- Nhóm **đã có test tự động** (backend unit + integration + API-contract + DB-real) và có minh chứng chạy thật (report/log/CI).
+- Nhóm “thua” repo điểm cao chủ yếu ở **E2E/UI** và **frontend unit tests**, cùng với phần **test design template (Office)** nếu xét về hình thức.
 
 ---
 
@@ -631,24 +709,24 @@ Tuần 2 (16-22/12):
 
 ### Đã hoàn thành:
 
-| Hạng mục            | Chi tiết                | Trạng thái |
-| ------------------- | ----------------------- | ---------- |
-| Backend Unit Tests  | 32 tests, 100% pass     | ✅         |
-| Code Coverage       | 100% trên utility files | ✅         |
-| Jest Config         | Threshold 80%           | ✅         |
-| Backend CI/CD       | GitHub Actions workflow | ✅         |
-| Frontend CI/CD      | GitHub Actions workflow | ✅         |
-| Auto Issue Creation | Khi test fail           | ✅         |
+| Hạng mục            | Chi tiết                                                         | Trạng thái |
+| ------------------- | ---------------------------------------------------------------- | ---------- |
+| Backend tests       | 116 tests (109 pass, 7 pending) theo `ecomAPI/jest-results.json` | ✅         |
+| Code Coverage       | Có report (collectCoverageFrom utilities)                        | ✅         |
+| Jest Config         | Coverage threshold 80%                                           | ✅         |
+| Backend CI/CD       | GitHub Actions workflow                                          | ✅         |
+| Frontend CI/CD      | GitHub Actions workflow                                          | ✅         |
+| Auto Issue Creation | Khi test fail                                                    | ✅         |
 
 ### Chưa hoàn thành:
 
-| Hạng mục            | Chi tiết                | Trạng thái |
-| ------------------- | ----------------------- | ---------- |
-| Verify CI/CD pass   | Chờ GitHub Actions      | ⏳         |
-| Frontend Unit Tests | React components        | ⏳         |
-| E2E Tests           | Cypress (đã bỏ khỏi CI) | ⚠️         |
-| Viết Word           | 27 trang                | ⏳         |
-| Screenshots         | CI/CD results           | ⏳         |
+| Hạng mục            | Chi tiết                        | Trạng thái |
+| ------------------- | ------------------------------- | ---------- |
+| Verify CI/CD pass   | Chờ GitHub Actions              | ⏳         |
+| Frontend Unit Tests | React components                | ⏳         |
+| E2E Tests           | Cypress (đã đưa vào CI – smoke) | ✅         |
+| Viết Word           | 27 trang                        | ⏳         |
+| Screenshots         | CI/CD results                   | ⏳         |
 
 ---
 
@@ -690,9 +768,9 @@ kiemthuphanmem/
 │   │   └── orderUtils.js       ✅ Order processing
 │   ├── tests/
 │   │   ├── unit/
-│   │   │   ├── authService.test.js      ✅ 9 tests
-│   │   │   ├── productService.test.js   ✅ 12 tests
-│   │   │   └── orderService.test.js     ✅ (Integration)
+│   │   │   ├── authService.test.js      ✅ unit tests
+│   │   │   ├── productService.test.js   ✅ unit tests
+│   │   │   └── orderService.test.js     ✅ unit/integration tests
 │   │   └── setup.js
 │   └── jest.config.js          ✅ Coverage config
 └── CHUONG4.md                  📄 File này
@@ -700,4 +778,4 @@ kiemthuphanmem/
 
 ---
 
-_Cập nhật lần cuối: 08/12/2025_
+_Cập nhật lần cuối: 18/12/2025_

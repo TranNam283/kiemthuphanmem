@@ -1,5 +1,18 @@
 describe("Auth - Login", () => {
   beforeEach(() => {
+    // The app's Header triggers background calls after login (cart + chat rooms).
+    // In CI we don't run the real backend for FE E2E, so stub these to avoid
+    // uncaught Axios "Network Error" promise rejections.
+    cy.intercept("GET", "**/api/listRoomOfUser*", {
+      statusCode: 200,
+      body: { errCode: 0, data: [] },
+    });
+
+    cy.intercept("GET", "**/api/get-all-shopcart-by-userId*", {
+      statusCode: 200,
+      body: { errCode: 0, data: [] },
+    });
+
     cy.intercept("POST", "**/api/login", {
       statusCode: 200,
       body: {

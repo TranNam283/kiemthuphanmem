@@ -25,7 +25,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -prootpassword"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
@@ -66,8 +66,9 @@ jobs:
         env:
           NODE_ENV: test
           DB_HOST: 127.0.0.1
+          DB_PORT: 3306
           DB_USER: root
-          DB_PASS: rootpassword
+          DB_PASSWORD: rootpassword
           DB_NAME: ecom_test
 
       - name: Run DB-real tests (MySQL)
@@ -79,8 +80,9 @@ jobs:
           NODE_ENV: test
           RUN_DB_TESTS: 1
           DB_HOST: 127.0.0.1
+          DB_PORT: 3306
           DB_USER: root
-          DB_PASS: rootpassword
+          DB_PASSWORD: rootpassword
           DB_NAME: ecom_test
 
       - name: Collect short test logs

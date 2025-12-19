@@ -2,6 +2,12 @@ describe("Cart - View cart", () => {
   beforeEach(() => {
     const user = { id: 123, roleId: "R2", email: "test@example.com" };
 
+    // Header fetches chat rooms for the logged-in user; stub to avoid network errors in CI.
+    cy.intercept("GET", "**/api/listRoomOfUser*", {
+      statusCode: 200,
+      body: { errCode: 0, data: [] },
+    }).as("listRooms");
+
     cy.intercept("GET", "**/api/get-all-shopcart-by-userId*", {
       statusCode: 200,
       body: {

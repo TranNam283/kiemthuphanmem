@@ -20,6 +20,11 @@ COPY --from=build /app/scripts ./scripts
 COPY package*.json ./
 RUN npm install --omit=dev --legacy-peer-deps
 
+# Build args
+ARG REACT_APP_BACKEND_URL=http://localhost:8080
+ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
+
+# Expose port
 EXPOSE 3000
 
 CMD ["sh", "-c", "npm run start:prod"]

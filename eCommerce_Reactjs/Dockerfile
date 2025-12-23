@@ -1,16 +1,24 @@
-FROM node:18-alpine
+# Build stage
+FROM node:18-alpine AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install --legacy-peer-deps
 
-# Copy source code
 COPY . .
+RUN npm run build
+
+# Runtime stage
+FROM node:18-alpine
+
+WORKDIR /app
+
+# serve is listed in dependencies
+COPY --from=build /app/build ./build
+COPY --from=build /app/scripts ./scripts
+COPY package*.json ./
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Build args
 ARG REACT_APP_BACKEND_URL=http://localhost:8080
@@ -19,5 +27,4 @@ ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
 # Expose port
 EXPOSE 3000
 
-# Start application
-CMD ["npm", "start"]
+CMD ["sh", "-c", "npm run start:prod"]

@@ -66,7 +66,7 @@ const AddReceipt = () => {
             if (prevState.supplierId) {
                 return prevState;
             }
-            return { ...prevState, supplierId: dataSupplier[0].id };
+            return { ...prevState, supplierId: String(dataSupplier[0].id) };
         });
     }, [dataSupplier]);
 
@@ -78,13 +78,13 @@ const AddReceipt = () => {
             if (prevState.productId) {
                 return prevState;
             }
-            return { ...prevState, productId: dataProduct[0].id };
+            return { ...prevState, productId: String(dataProduct[0].id) };
         });
     }, [dataProduct]);
 
     useEffect(() => {
         const selectedProduct = dataProduct.find(
-            (product) => product.id === inputValues.productId
+            (product) => String(product.id) === String(inputValues.productId)
         );
         if (!selectedProduct) {
             setDataProductDetail([]);
@@ -101,16 +101,16 @@ const AddReceipt = () => {
             return;
         }
         setProductDetailId((prevState) => {
-            if (prevState && dataProductDetail.some((detail) => detail.id === prevState)) {
+            if (prevState && dataProductDetail.some((detail) => String(detail.id) === String(prevState))) {
                 return prevState;
             }
-            return dataProductDetail[0].id;
+            return String(dataProductDetail[0].id);
         });
     }, [dataProductDetail]);
 
     useEffect(() => {
         const selectedDetail = dataProductDetail.find(
-            (detail) => detail.id === productDetailId
+            (detail) => String(detail.id) === String(productDetailId)
         );
         if (!selectedDetail) {
             setDataProductDetailSize([]);
@@ -120,10 +120,10 @@ const AddReceipt = () => {
         const sizes = selectedDetail.productDetailSize || [];
         setDataProductDetailSize(sizes);
         setProductDetailSizeId((prevState) => {
-            if (prevState && sizes.some((size) => size.id === prevState)) {
+            if (prevState && sizes.some((size) => String(size.id) === String(prevState))) {
                 return prevState;
             }
-            return sizes.length > 0 ? sizes[0].id : '';
+            return sizes.length > 0 ? String(sizes[0].id) : '';
         });
     }, [dataProductDetail, productDetailId]);
 
@@ -147,11 +147,11 @@ const AddReceipt = () => {
 
     const handleSaveReceipt = async () => {
         const response = await createNewReceiptService({
-            supplierId: inputValues.supplierId,
+            supplierId: inputValues.supplierId ? Number(inputValues.supplierId) : inputValues.supplierId,
             userId: user.id,
-            productDetailSizeId,
-            quantity: inputValues.quantity,
-            price: inputValues.price
+            productDetailSizeId: productDetailSizeId ? Number(productDetailSizeId) : productDetailSizeId,
+            quantity: inputValues.quantity ? Number(inputValues.quantity) : inputValues.quantity,
+            price: inputValues.price ? Number(inputValues.price) : inputValues.price
         });
 
         if (response && response.errCode === 0) {

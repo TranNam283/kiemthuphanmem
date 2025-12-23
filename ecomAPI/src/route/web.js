@@ -22,6 +22,18 @@ let initwebRoutes = (app) => {
   router.get("/", (req, res) => {
     return res.send("hello");
   });
+
+  // Debug endpoint - check DB config
+  router.get("/api/debug-db", async (req, res) => {
+    return res.json({
+      DB_HOST: process.env.DB_HOST || "not set",
+      DB_PORT: process.env.DB_PORT || "not set",
+      DB_NAME: process.env.DB_NAME || "not set",
+      DB_USER: process.env.DB_USER || "not set",
+      DB_PASSWORD: process.env.DB_PASSWORD ? "***set***" : "not set",
+    });
+  });
+
   //=====================API USER==========================//
   router.post("/api/create-new-user", userController.handleCreateNewUser);
   router.put(

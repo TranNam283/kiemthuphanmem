@@ -1,0 +1,12 @@
+Trên terminal máy tính
+1. Tải choco
+Set-ExecutionPolicy Bypass -Scope Process -Force; `
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
+iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+2. Cài đặt môi trường
+C:\ProgramData\chocolatey\bin
+3. Tải k6
+choco install k6 -y
+
+cd performance/k6
+chạy: k6 run load-test.js hoặc k6 run stress-test.js

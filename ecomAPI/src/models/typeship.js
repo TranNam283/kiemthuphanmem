@@ -1,21 +1,24 @@
-'use strict';
-const {
-    Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-    class TypeShip extends Model {
-
-        static associate(models) {
-            TypeShip.hasMany(models.OrderProduct, { foreignKey: 'typeShipId', as: 'typeShipData' })
-        }
-    };
-    TypeShip.init({
-        type: DataTypes.STRING,
-        price: DataTypes.BIGINT
-    }, {
-        sequelize,
-        modelName: 'TypeShip',
-        tableName: 'Typeships',
-    });
-    return TypeShip;
+  class TypeShip extends Model {
+    static associate(models) {
+      TypeShip.hasMany(models.OrderProduct, {
+        foreignKey: "typeShipId",
+        as: "typeShipData",
+      });
+    }
+  }
+  TypeShip.init(
+    {
+      type: DataTypes.STRING,
+      price: DataTypes.BIGINT,
+    },
+    {
+      sequelize,
+      modelName: "TypeShip",
+      tableName: "typeships",
+    }
+  );
+  return TypeShip;
 };

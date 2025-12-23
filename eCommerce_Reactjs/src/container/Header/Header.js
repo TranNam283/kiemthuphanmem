@@ -15,7 +15,11 @@ const Header = props => {
     const dispatch = useDispatch()
     const history = useHistory()
     let dataCart = useSelector(state => state.shopcart.listCartItem)
-    const host = process.env.REACT_APP_BACKEND_URL;
+    const host =
+        (typeof window !== "undefined" &&
+            window.__APP_CONFIG__ &&
+            window.__APP_CONFIG__.BACKEND_URL) ||
+        process.env.REACT_APP_BACKEND_URL;
     const socketRef = useRef();
 
     const handleLogout = () => {
